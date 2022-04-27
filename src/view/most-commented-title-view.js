@@ -1,10 +1,10 @@
 import {createElement} from '../render.js';
 
-const createFilmsList = () => '<section class="films-list"></section>';
+const createMostCommentedTitle = () => '<h2 class="films-list__title">Most commented</h2>';
 
-export default class FilmsListView {
+export default class MostCommentedTitleView {
   getTemplate() {
-    return createFilmsList();
+    return createMostCommentedTitle();
   }
 
   getElement() {

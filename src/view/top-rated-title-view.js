@@ -1,10 +1,10 @@
 import {createElement} from '../render.js';
 
-const createFilmsList = () => '<section class="films-list"></section>';
+const createTopRatedTitle = () => '<h2 class="films-list__title">Top rated</h2>';
 
-export default class FilmsListView {
+export default class TopRatedTitleView {
   getTemplate() {
-    return createFilmsList();
+    return createTopRatedTitle();
   }
 
   getElement() {
