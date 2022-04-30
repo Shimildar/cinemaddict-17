@@ -5,9 +5,9 @@ import FilmsContainerView from '../view/films-container-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import FilterView from '../view/filter-view.js';
 import MenuView from '../view/menu-view.js';
+import PopupView from '../view/popup-view.js';
 import {render} from '../render.js';
 
-const FILMS_LIST_COUNT = 5;
 const TOP_RATED_LIST_COUNT = 2;
 const MOST_COMMENTED_LIST_COUNT = 2;
 const topRatedTitle = 'Top rated';
@@ -17,22 +17,28 @@ export default class BoardPresenter {
   filmsContainer = new FilmsContainerView();
   filmsContainerElement = this.filmsContainer.getElement();
   filmsList = new FilmsListView();
-  topRatedContainer = new ExtraContainerView();
-  mostCommentedContainer = new ExtraContainerView();
+  topRatedContainer = new ExtraContainerView(topRatedTitle);
+  mostCommentedContainer = new ExtraContainerView(mostCommentedTitle);
 
-  init = (boardContainer) => {
+  init = (boardContainer, filmsModel, commentsModel) => {
     this.boardContainer = boardContainer;
+    this.filmsModel = filmsModel;
+    this.boardFilms = [...this.filmsModel.getFilms()];
+    this.commentsModel = commentsModel;
+    this.boardComments = [...this.commentsModel.getComments()];
 
     // Menu, filter
     render(new MenuView(), this.boardContainer);
     render(new FilterView(), this.boardContainer);
 
-    // Main films list
+    // Container
     render(this.filmsContainer, this.boardContainer);
+
+    // Main films list
     render(this.filmsList, this.filmsContainerElement);
 
-    for (let i = 0; i < FILMS_LIST_COUNT; i++) {
-      render(new FilmCardView(), this.filmsList.getFilmsListContainer());
+    for (const film of this.boardFilms) {
+      render(new FilmCardView(film), this.filmsList.getFilmsListContainer());
     }
 
     // Button "Show more"
@@ -40,19 +46,20 @@ export default class BoardPresenter {
 
     // // Top rated
     render(this.topRatedContainer, this.filmsContainerElement);
-    this.topRatedContainer.renderTitle(topRatedTitle);
 
     for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
-      render(new FilmCardView(), this.topRatedContainer.getFilmsListContainer());
+      render(new FilmCardView(this.boardFilms[i + 6]), this.topRatedContainer.getFilmsListContainer());// Временно [i + 6]
     }
 
     // // Most commented
     render(this.mostCommentedContainer, this.filmsContainerElement);
-    this.mostCommentedContainer.renderTitle(mostCommentedTitle);
 
     for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
-      render(new FilmCardView(), this.mostCommentedContainer.getFilmsListContainer());
+      render(new FilmCardView(this.boardFilms[i + 3]), this.mostCommentedContainer.getFilmsListContainer());// Временно [i + 3]
     }
+
+    // Popup
+    render(new PopupView(this.boardFilms[0], this.boardComments), this.boardContainer);
   };
 }
 
