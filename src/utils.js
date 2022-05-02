@@ -9,6 +9,7 @@ const getRandomInteger = (a = 0, b = 1) => {
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
 
+// Генерирует уникальную коллекцию
 const generateUniqCollection = (collection) => {
   const mySet = new Set(collection);
   const uniqArray = Array.from(mySet);
@@ -16,79 +17,44 @@ const generateUniqCollection = (collection) => {
   return uniqArray;
 };
 
-const humanizeFilmReleaseDate = (releaseDate) => dayjs(releaseDate).format('YYYY');
+// Достает случайный элемент из массива
+const getRandomElement = (array) => {
+  const randomIndex = getRandomInteger(0, array.length - 1);
 
-const humanizePopupReleaseDate = (releaseDate) => dayjs(releaseDate).format('D MMMM YYYY');
+  return array[randomIndex];
+};
 
-const humanizeCommentDate = (commentDate) => dayjs(commentDate).format('YYYY/MM/DD h:mm');
+// Приводит в нужный формат дату и время
+const humanizeDate = (date, format) => dayjs(date).format(format);
 
+// Приводит в нужный формат длительность фильма из минут в часы и минуты
 const humanizeFilmRuntime = (item) => {
-
-  let minutes = item;
-  let hours = 0;
-
-  if (minutes >= 60) {
-    for (let i = 1; minutes >= 60; i++) {
-      minutes-= 60;
-      hours = i;
-    }
-  }
-
+  const hours = Math.floor(item / 60);
+  const minutes = item - (60 * hours);
   const runtime = `${hours}h ${minutes}m`;
 
   return runtime;
 };
 
-const updateGenreTerm = (genreArray) => (genreArray.length > 1) ? 'Genres' : 'Genre';
+// Отсортировывает комментарии
+const sortComments = (film, comments) => {
+  const filmComments = film.comments;
+  const sortedComments = [];
 
-const createCommentsPopup = (filmItem, commentsCollection) => {
-  const popupComments = [];
-  const filmComments = filmItem.comments;
-
-  for (const comment of commentsCollection) {
+  for (const comment of comments) {
     filmComments.forEach((item) => {
       if (comment.id === item) {
-        popupComments.push(comment);
+        sortedComments.push(comment);
       }
     });
   }
 
-  return popupComments;
+  return sortedComments;
 };
 
-const createGenreElements = (genresArray) => {
-  let genresCollection = '';
+// Обрезает длину строки
+const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
 
-  genresArray.forEach((item) => {
-    genresCollection += `<span class="film-details__genre">${item}</span>`;
-  });
-
-  return genresCollection;
-};
-
-const createCommentsList = (commentsArray) => {
-  let commentsList = '';
-
-  commentsArray.forEach(({author, comment, date, emotion}) => {
-    const commentDate = humanizeCommentDate(date);
-    commentsList += `<li class="film-details__comment">
-    <span class="film-details__comment-emoji">
-      <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
-    </span>
-    <div>
-      <p class="film-details__comment-text">${comment}</p>
-      <p class="film-details__comment-info">
-        <span class="film-details__comment-author">${author}</span>
-        <span class="film-details__comment-day">${commentDate}</span>
-        <button class="film-details__comment-delete">Delete</button>
-      </p>
-    </div>
-  </li>`;
-  });
-
-  return commentsList;
-};
-
-export {getRandomInteger, humanizeFilmReleaseDate, humanizeFilmRuntime, generateUniqCollection, humanizePopupReleaseDate, updateGenreTerm, createCommentsPopup, createGenreElements, createCommentsList};
+export {getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength};
 
 

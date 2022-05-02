@@ -2,7 +2,8 @@ import {render} from './render.js';
 import UserProfileView from './view/user-profile-view.js';
 import BoardPresenter from './presenter/board-presenter.js';
 import FooterStatisticsView from './view/footer-statistics-view.js';
-import {FilmsModel, CommentsModel} from './model/films-model.js';
+import {FilmsModel} from './model/films-model.js';
+import {CommentsModel} from './model/comments-model.js';
 
 const pageBody = document.querySelector('body');
 const siteHeaderElement = pageBody.querySelector('.header');

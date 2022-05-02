@@ -1,15 +1,61 @@
 import {createElement} from '../render.js';
-import {humanizePopupReleaseDate, humanizeFilmRuntime, updateGenreTerm, createCommentsPopup, createGenreElements, createCommentsList} from '../utils.js';
+import {humanizeDate, humanizeFilmRuntime, sortComments} from '../utils.js';
 
-const createPopup = (film, commentsArray) => {
-  const {filmInfo, comments} = film;
-  const popupComments = createCommentsPopup(film, commentsArray);
-  const popupFilmDate = humanizePopupReleaseDate(filmInfo.release.date);
+const POPUP_RELEASE_DATE_FORMAT = 'DD MMMM YYYY';
+const POPUP_COMMENT_DATE_FORMAT = 'YYYY/MM/DD h:mm';
+
+const updateGenreTerm = (currentGenres) => (currentGenres.length > 1) ? 'Genres' : 'Genre';
+
+const createGenreElements = (currentGenres) => {
+  let genresCollection = '';
+
+  currentGenres.forEach((item) => {
+    genresCollection += `<span class="film-details__genre">${item}</span>`;
+  });
+
+  return genresCollection;
+};
+
+const createCommentsList = (comments) => {
+  let commentsList = '';
+
+  comments.forEach(({author, comment, date, emotion}) => {
+
+    const commentDate = humanizeDate(date, POPUP_COMMENT_DATE_FORMAT);
+
+    commentsList += (
+      `<li class="film-details__comment">
+      <span class="film-details__comment-emoji">
+        <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
+      </span>
+      <div>
+        <p class="film-details__comment-text">${comment}</p>
+        <p class="film-details__comment-info">
+          <span class="film-details__comment-author">${author}</span>
+          <span class="film-details__comment-day">${commentDate}</span>
+          <button class="film-details__comment-delete">Delete</button>
+        </p>
+      </div>
+      </li>`);
+  });
+
+  return commentsList;
+};
+
+const getClassForControlButton = (option) => (option) ? 'film-details__control-button--active' : '';
+
+const createPopup = (film, allComments) => {
+  const {filmInfo, comments, userDetails} = film;
+  const popupComments = sortComments(film, allComments);
+  const popupFilmDate = humanizeDate(filmInfo.release.date, POPUP_RELEASE_DATE_FORMAT);
   const filmRunTime = humanizeFilmRuntime(filmInfo.runtime);
   const genreTerm = updateGenreTerm(filmInfo.genre);
   const genres = createGenreElements(filmInfo.genre);
   const commentsList = createCommentsList(popupComments);
-console.log(popupComments);
+  const watchlistControlStatus = getClassForControlButton(userDetails.watchlist);
+  const watchedControlStatus = getClassForControlButton(userDetails.alreadyWatched);
+  const favoriteControlStatus = getClassForControlButton(userDetails.favorite);
+
   return (
     `<section class="film-details">
     <form class="film-details__inner" action="" method="get">
@@ -75,9 +121,9 @@ console.log(popupComments);
         </div>
 
         <section class="film-details__controls">
-          <button type="button" class="film-details__control-button film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
-          <button type="button" class="film-details__control-button film-details__control-button--active film-details__control-button--watched" id="watched" name="watched">Already watched</button>
-          <button type="button" class="film-details__control-button film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
+          <button type="button" class="film-details__control-button ${watchlistControlStatus} film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
+          <button type="button" class="film-details__control-button ${watchedControlStatus} film-details__control-button--watched" id="watched" name="watched">Already watched</button>
+          <button type="button" class="film-details__control-button ${favoriteControlStatus} film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
         </section>
       </div>
 

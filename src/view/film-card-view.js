@@ -1,10 +1,14 @@
 import {createElement} from '../render.js';
-import {humanizeFilmReleaseDate, humanizeFilmRuntime} from '../utils.js';
+import {humanizeDate, humanizeFilmRuntime, cutTextLength} from '../utils.js';
+
+const filmReleaseDateFormat = 'YYYY';
+const descriptionMaxLength = 138;
 
 const createFilmCard = (film) => {
   const {filmInfo, comments} = film;
-  const releaseDate = humanizeFilmReleaseDate(filmInfo.release.date);
+  const releaseDate = humanizeDate(filmInfo.release.date, filmReleaseDateFormat);
   const filmRuntime = humanizeFilmRuntime(filmInfo.runtime);
+  const description = cutTextLength(filmInfo.description, descriptionMaxLength);
 
   return (
     `<article class="film-card">
@@ -17,7 +21,7 @@ const createFilmCard = (film) => {
               <span class="film-card__genre">${filmInfo.genre}</span>
           </p>
           <img src="./images/posters/${filmInfo.poster}" alt="" class="film-card__poster">
-          <p class="film-card__description">${filmInfo.description}</p>
+          <p class="film-card__description">${description}</p>
           <span class="film-card__comments">${comments.length} comments</span>
         </a>
         <div class="film-card__controls">
