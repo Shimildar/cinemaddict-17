@@ -12,16 +12,16 @@ const getRandomInteger = (a = 0, b = 1) => {
 // Генерирует уникальную коллекцию
 const generateUniqCollection = (collection) => {
   const mySet = new Set(collection);
-  const uniqArray = Array.from(mySet);
+  const uniqCollection = Array.from(mySet);
 
-  return uniqArray;
+  return uniqCollection;
 };
 
 // Достает случайный элемент из массива
-const getRandomElement = (array) => {
-  const randomIndex = getRandomInteger(0, array.length - 1);
+const getRandomElement = (collection) => {
+  const randomIndex = getRandomInteger(0, collection.length - 1);
 
-  return array[randomIndex];
+  return collection[randomIndex];
 };
 
 // Приводит в нужный формат дату и время
@@ -31,9 +31,8 @@ const humanizeDate = (date, format) => dayjs(date).format(format);
 const humanizeFilmRuntime = (item) => {
   const hours = Math.floor(item / 60);
   const minutes = item - (60 * hours);
-  const runtime = `${hours}h ${minutes}m`;
 
-  return runtime;
+  return `${hours}h ${minutes}m`;
 };
 
 // Отсортировывает комментарии

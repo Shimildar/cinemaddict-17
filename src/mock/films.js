@@ -100,17 +100,17 @@ const generateDate = () => {
   return dayjs(data).subtract(yearsGap, 'year').add(monthsGap, 'month').add(daysGap, 'days').toDate();
 };
 
-const generateCommentsIdArray = () => {
-  const commentsIdArray = [];
+const generateCommentsIdCollection = () => {
+  const commentsIdCollection = [];
   const maxLength = getRandomInteger(5, 30);
   let id = 0;
 
   for (let i = 1; i < maxLength; i++) {
     id += i;
-    commentsIdArray.push(id);
+    commentsIdCollection.push(id);
   }
 
-  return commentsIdArray;
+  return commentsIdCollection;
 };
 
 export const generateFilm = (item, index) => {
@@ -120,7 +120,7 @@ export const generateFilm = (item, index) => {
 
   return {
     id: index +1,
-    comments: generateCommentsIdArray(),
+    comments: generateCommentsIdCollection(),
     filmInfo: {
       title: getRandomElement(randomTitles),
       alternativeTitle: 'alternative title',
