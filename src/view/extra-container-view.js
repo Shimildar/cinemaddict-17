@@ -1,16 +1,20 @@
 import {createElement} from '../render.js';
 
-const createExtraContainer = () => (
+const createExtraContainer = (titleText) => (
   `<section class="films-list films-list--extra">
-    <h2 class="films-list__title"></h2>
+    <h2 class="films-list__title">${titleText}</h2>
     <div class="films-list__container">
     </div>
   </section>`
 );
 
 export default class ExtraContainerView {
+  constructor(titleText) {
+    this.titleText = titleText;
+  }
+
   getTemplate() {
-    return createExtraContainer();
+    return createExtraContainer(this.titleText);
   }
 
   getElement() {
@@ -22,20 +26,7 @@ export default class ExtraContainerView {
   }
 
   getFilmsListContainer() {
-    if (!this.element) {
-      this.getElement();
-    }
-
     return this.element.querySelector('.films-list__container');
-  }
-
-  renderTitle(title) {
-    if (!this.element) {
-      this.getElement();
-    }
-
-    const titleText = this.element.querySelector('.films-list__title');
-    titleText.textContent = title;
   }
 
   removeElement() {
