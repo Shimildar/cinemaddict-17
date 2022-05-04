@@ -106,7 +106,7 @@ export default class BoardPresenter {
       const filmForPopup = getItemFromCollection(this.#boardFilms, filmFromPage);
       const popupComponent = new PopupView(filmForPopup, this.#boardComments);
 
-      document.addEventListener('keydown', onEscKeyDown, {once: true});
+      document.addEventListener('keydown', onEscKeyDown);
       this.#boardContainer.classList.add('hide-overflow');
       popupComponent.element.querySelector('.film-details__close-btn').addEventListener('click', removePopupFromPage, {once: true});
 
