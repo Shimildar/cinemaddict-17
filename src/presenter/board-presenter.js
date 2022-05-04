@@ -95,18 +95,20 @@ export default class BoardPresenter {
       if (isEscPressed(e)) {
         evt.preventDefault();
         removePopupFromPage();
-        document.removeEventListener('keydown', onEscKeyDown);
       }
     }
 
     if (target.matches('.film-card__poster')) {
+      if (this.#boardContainer.querySelector('.film-details')) {
+        this.#boardContainer.lastChild.remove();
+      }
       const filmFromPage = target.closest('.film-card');
       const filmForPopup = getItemFromCollection(this.#boardFilms, filmFromPage);
       const popupComponent = new PopupView(filmForPopup, this.#boardComments);
 
-      document.addEventListener('keydown', onEscKeyDown);
+      document.addEventListener('keydown', onEscKeyDown, {once: true});
       this.#boardContainer.classList.add('hide-overflow');
-      popupComponent.element.querySelector('.film-details__close-btn').addEventListener('click', removePopupFromPage);
+      popupComponent.element.querySelector('.film-details__close-btn').addEventListener('click', removePopupFromPage, {once: true});
 
       render(popupComponent, this.#boardContainer);
     }
