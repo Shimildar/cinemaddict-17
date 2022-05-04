@@ -3,19 +3,26 @@ import {createElement} from '../render.js';
 const createFilmsMainContaner = () => '<section class="films"></section>';
 
 export default class FilmsContainerView {
-  getTemplate() {
+  #element = null;
+
+  get template() {
     return createFilmsMainContaner();
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
+  }
+
+  getEventListener(cb) {
+    this.#element.addEventListener('click', cb);
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
+

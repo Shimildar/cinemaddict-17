@@ -9,27 +9,29 @@ const createExtraContainer = (titleText) => (
 );
 
 export default class ExtraContainerView {
+  #element = null;
+
   constructor(titleText) {
     this.titleText = titleText;
   }
 
-  getTemplate() {
+  get template() {
     return createExtraContainer(this.titleText);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
-  getFilmsListContainer() {
-    return this.element.querySelector('.films-list__container');
+  get filmsListContainer() {
+    return this.#element.querySelector('.films-list__container');
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
