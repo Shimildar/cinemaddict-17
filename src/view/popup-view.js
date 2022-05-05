@@ -168,6 +168,10 @@ export default class PopupView {
     return this.#element;
   }
 
+  createOnButtonClickListener(cb) {
+    this.#element.querySelector('.film-details__close-btn').addEventListener('click', cb, {once: true});
+  }
+
   removeElement() {
     this.#element = null;
   }
