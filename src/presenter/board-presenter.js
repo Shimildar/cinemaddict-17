@@ -102,40 +102,38 @@ export default class BoardPresenter {
 
     if (this.#boardFilms.length === 0) {
       render(new NoFilmMessageView(), this.#boardContainerMain);
+    } else {
+      render(new FilterView(), this.#boardContainerMain);
+      render(this.#filmsContainer, this.#boardContainerMain);
+      render(this.#filmsList, this.#filmsContainer.element);
+
+      for (let i = 0; i < Math.min(this.#boardFilms.length, PER_STEP_FILM_COUNT); i++) {
+        render(new FilmCardView(this.#boardFilms[i]), this.#filmsList.filmsListContainer);
+      }
+
+      // Button "Show more"
+      if (this.#boardFilms.length > PER_STEP_FILM_COUNT) {
+        render(this.#showMoreButton, this.#filmsList.element);
+
+        this.#showMoreButton.createClickListener(this.#onShowMoreButtonClick);
+      }
+      // Top rated
+      render(this.#topRatedContainer, this.#filmsContainer.element);
+
+      for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
+        render(new FilmCardView(this.#boardFilms[i + 6]), this.#topRatedContainer.filmsListContainer);// Временно [i + 6]
+      }
+      // Most commented
+      render(this.#mostCommentedContainer, this.#filmsContainer.element);
+
+      for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
+        render(new FilmCardView(this.#boardFilms[i + 3]), this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
+      }
+      // Listener renderPopup
+      this.#filmsContainer.createClickListener(this.#renderPopup);
     }
-
-    render(new FilterView(), this.#boardContainerMain);
-    render(this.#filmsContainer, this.#boardContainerMain);
-    render(this.#filmsList, this.#filmsContainer.element);
-
-    for (let i = 0; i < Math.min(this.#boardFilms.length, PER_STEP_FILM_COUNT); i++) {
-      render(new FilmCardView(this.#boardFilms[i]), this.#filmsList.filmsListContainer);
-    }
-
-    // Button "Show more"
-    if (this.#boardFilms.length > PER_STEP_FILM_COUNT) {
-      render(this.#showMoreButton, this.#filmsList.element);
-
-      this.#showMoreButton.createClickListener(this.#onShowMoreButtonClick);
-    }
-    // Top rated
-    render(this.#topRatedContainer, this.#filmsContainer.element);
-
-    for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
-      render(new FilmCardView(this.#boardFilms[i + 6]), this.#topRatedContainer.filmsListContainer);// Временно [i + 6]
-    }
-    // Most commented
-    render(this.#mostCommentedContainer, this.#filmsContainer.element);
-
-    for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
-      render(new FilmCardView(this.#boardFilms[i + 3]), this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
-    }
-    // Listener renderPopup
-    this.#filmsContainer.createClickListener(this.#renderPopup);
-
-
     // Footer statistics
-    render(new FooterStatisticsView(), this.#boardContainerFooter);
+    render(new FooterStatisticsView(this.#boardFilms.length), this.#boardContainerFooter);
   };
 }
 
