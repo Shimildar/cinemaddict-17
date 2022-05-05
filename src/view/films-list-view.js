@@ -8,27 +8,26 @@ const createFilmsList = () => (
 );
 
 export default class FilmsListView {
-  getTemplate() {
+  #element = null;
+
+  get template() {
     return createFilmsList();
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
-  getFilmsListContainer() {
-    if (!this.element) {
-      this.getElement();
-    }
+  get filmsListContainer() {
 
-    return this.element.querySelector('.films-list__container');
+    return this.#element.querySelector('.films-list__container');
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

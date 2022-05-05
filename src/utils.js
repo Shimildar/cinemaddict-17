@@ -54,6 +54,10 @@ const sortComments = (film, comments) => {
 // Обрезает длину строки
 const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
 
-export {getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength};
+// Находит нужный элемент из массива сравнивая id
+const getItemFromCollection = (array, target) => array.find((item) => item.id === Number(target.id));
 
+// Нажат эскейп
+const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
+export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength, getItemFromCollection};
