@@ -9,7 +9,7 @@ import FilterView from '../view/filter-view.js';
 import MenuView from '../view/menu-view.js';
 import PopupView from '../view/popup-view.js';
 import NoFilmMessageView from '../view/no-film-view.js';
-import {render} from '../render.js';
+import {render} from '../framework/render.js';
 import {getItemFromCollection, isEscPressed} from '../utils.js';
 
 const PER_STEP_FILM_COUNT = 5;
@@ -77,7 +77,7 @@ export default class BoardPresenter {
 
       this.#boardContainer.classList.add('hide-overflow');
       render(popupComponent, this.#boardContainer);
-      popupComponent.createOnButtonClickListener(removePopupFromPage);
+      popupComponent.setCloseButtonClickHandler(removePopupFromPage);
       document.addEventListener('keydown', onEscKeyDown);
     }
   };
@@ -115,7 +115,7 @@ export default class BoardPresenter {
       if (this.#boardFilms.length > PER_STEP_FILM_COUNT) {
         render(this.#showMoreButton, this.#filmsList.element);
 
-        this.#showMoreButton.createClickListener(this.#onShowMoreButtonClick);
+        this.#showMoreButton.setClickHandler(this.#onShowMoreButtonClick);
       }
       // Top rated
       render(this.#topRatedContainer, this.#filmsContainer.element);
@@ -130,7 +130,7 @@ export default class BoardPresenter {
         render(new FilmCardView(this.#boardFilms[i + 3]), this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
       }
       // Listener renderPopup
-      this.#filmsContainer.createClickListener(this.#renderPopup);
+      this.#filmsContainer.setClickHandler(this.#renderPopup);
     }
     // Footer statistics
     render(new FooterStatisticsView(this.#boardFilms.length), this.#boardContainerFooter);
