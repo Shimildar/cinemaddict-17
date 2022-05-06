@@ -1,16 +1,12 @@
 import {createElement} from '../render.js';
 
-const createFooterStatistics = (count) => `<p>${count} movies inside</p>`;
+const createButtonShowMore = () => '<button class="films-list__show-more">Show more</button>';
 
-export default class FooterStatisticsView {
+export default class ShowMoreButtonView {
   #element = null;
 
-  constructor(count) {
-    this.count = count;
-  }
-
   get template() {
-    return createFooterStatistics(this.count);
+    return createButtonShowMore();
   }
 
   get element() {
@@ -19,6 +15,10 @@ export default class FooterStatisticsView {
     }
 
     return this.#element;
+  }
+
+  createClickListener(cb) {
+    this.#element.addEventListener('click', cb);
   }
 
   removeElement() {

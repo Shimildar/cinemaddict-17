@@ -17,7 +17,7 @@ export default class FilmsContainerView {
     return this.#element;
   }
 
-  getEventListener(cb) {
+  createClickListener(cb) {
     this.#element.addEventListener('click', cb);
   }
 
