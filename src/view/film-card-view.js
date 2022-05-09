@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDate, humanizeFilmRuntime, cutTextLength} from '../utils.js';
 
 const filmReleaseDateFormat = 'YYYY';
@@ -30,26 +30,14 @@ const createFilmCard = (film) => {
   );
 };
 
-export default class FilmCardView {
-  #element = null;
+export default class FilmCardView extends AbstractView {
 
   constructor(film) {
+    super();
     this.film = film;
   }
 
   get template() {
     return createFilmCard(this.film);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

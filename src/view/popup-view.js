@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDate, humanizeFilmRuntime, sortComments} from '../utils.js';
 
 const POPUP_RELEASE_DATE_FORMAT = 'DD MMMM YYYY';
@@ -148,10 +148,10 @@ const createPopup = (film, allComments) => {
   );
 };
 
-export default class PopupView {
-  #element = null;
+export default class PopupView extends AbstractView {
 
   constructor(film, comments) {
+    super();
     this.film = film;
     this.comments = comments;
   }
@@ -160,19 +160,13 @@ export default class PopupView {
     return createPopup(this.film, this.comments);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setCloseButtonClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#clickHandler);
+  };
 
-    return this.#element;
-  }
-
-  createOnButtonClickListener(cb) {
-    this.#element.querySelector('.film-details__close-btn').addEventListener('click', cb, {once: true});
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
 }
