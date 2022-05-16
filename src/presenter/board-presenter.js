@@ -9,9 +9,12 @@ import FilterView from '../view/filter-view.js';
 import NoFilmMessageView from '../view/no-film-view.js';
 import {render, remove} from '../framework/render.js';
 import {extraContainerTitles} from '../const.js';
-import {updateItem} from '../utils/common.js';
+import {updateItem} from '../utils/films.js';
+import {getFilterType} from '../utils/filter.js';
+import {sortDateDown, sortRatingDown} from '../utils/sort.js';
+import {SortType, FilterType} from '../const.js';
 import FilmCardPresenter from './film-presenter.js';
-// import FilterPresenter from './filter-presenter.js';
+import FilmCardView from '../view/film-card-view.js';
 
 const PER_STEP_FILM_COUNT = 5;
 const TOP_RATED_LIST_COUNT = 2;
@@ -28,6 +31,11 @@ export default class BoardPresenter {
   #boardComments = [];
 
   #renderedFilmCount = PER_STEP_FILM_COUNT;
+  #filmPresenter = new Map();
+  #currentFilterType = FilterType.DEFAULT;
+  #currentSortType = SortType.DEFAULT;
+  #sourcedFilms = [];
+  #filteredFilms = null;
 
   #filterComponent = null;
   #sortComponent = new SortView();
@@ -37,8 +45,6 @@ export default class BoardPresenter {
   #showMoreButton = new ShowMoreButtonView();
   #topRatedContainer = new ExtraContainerView(extraContainerTitles.TOP_RATED);
   #mostCommentedContainer = new ExtraContainerView(extraContainerTitles.MOST_COMMENTED);
-
-  #filmPresenter = new Map();
 
   constructor(boardContainer, filmsModel, commentsModel) {
     this.#boardContainer = boardContainer;
@@ -51,6 +57,7 @@ export default class BoardPresenter {
     this.#boardContainerMain = this.#boardContainer.querySelector('.main');
     this.#boardContainerFooter = this.#boardContainer.querySelector('.footer');
     this.#boardFilms = [...this.#filmsModel.films];
+    this.#sourcedFilms = [...this.#filmsModel.films];
     this.#boardComments = [...this.#commentsModel.comments];
 
     this.#renderBoard();
@@ -64,18 +71,19 @@ export default class BoardPresenter {
       render(this.#noFilmMessage, this.#boardContainerMain);
       this.#renderFooter();
       return;
+    } else {
+      this.#renderSort();
+      render(this.#filmsContainer, this.#boardContainerMain);
+      render(this.#filmsList, this.#filmsContainer.element);
+      this.#renderFilmList(this.#boardFilms);
+      this.#renderTopFilmList();
+      this.#renderMostCommentedFilmList();
     }
 
-    this.#renderSort();
-    render(this.#filmsContainer, this.#boardContainerMain);
-    render(this.#filmsList, this.#filmsContainer.element);
-    this.#renderFilmList(this.#boardFilms);
-    this.#renderTopFilmList();
-    this.#renderMostCommentedFilmList();
     this.#renderFooter();
   };
 
-  #handleTaskChange = (updatedFilm) => {
+  #handleFilmChange = (updatedFilm) => {
     this.#boardFilms = updateItem(this.#boardFilms, updatedFilm);
     this.#filmPresenter.get(updatedFilm.id).init(updatedFilm);
   };
@@ -91,8 +99,69 @@ export default class BoardPresenter {
     this.#filmPresenter.forEach((presenter) => presenter.resetView());
   };
 
-  #handleSortTypeChange = () => {
-    console.log(this.#boardFilms);               //будет в следующем ДЗ
+  #filterFilms = (filterType) => {
+    this.#filteredFilms = getFilterType(this.#boardFilms);
+
+    switch (filterType) {
+
+      case FilterType.WATCHLIST:
+        this.#renderFilmList(this.#filteredFilms.watchlist);
+        break;
+      case FilterType.HISTORY:
+        this.#renderFilmList(this.#filteredFilms.alreadyWatched);
+        break;
+      case FilterType.FAVORITE:
+        this.#renderFilmList(this.#filteredFilms.favorite);
+        break;
+      default:
+
+        this.#renderFilmList(this.#boardFilms);
+    }
+
+    this.#currentFilterType = filterType;
+    this.#filteredFilms = null;
+  };
+
+  #handleFilterTypeChange = (filterType) => {
+    if (this.#currentFilterType === filterType) {
+      return;
+    }
+
+    this.#clearFilmList();
+    this.#filterFilms(filterType);
+  };
+
+  #renderFilter = (films) => {
+    this.#filterComponent = new FilterView(films);
+    render(this.#filterComponent, this.#boardContainerMain);
+    this.#filterComponent.setFilterTypeChangeHandle(this.#handleFilterTypeChange);
+  };
+
+  #sortFilms = (sortType) => {
+
+    switch (sortType) {
+      case SortType.DATE_DOWN:
+        this.#boardFilms.sort(sortDateDown);
+        break;
+      case SortType.RATING_DOWN:
+        this.#boardFilms.sort(sortRatingDown);
+        break;
+      default:
+
+        this.#boardFilms = [...this.#sourcedFilms];
+    }
+
+    this.#currentSortType = sortType;
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortFilms(sortType);
+    this.#clearFilmList();
+    this.#renderFilmList(this.#boardFilms);
   };
 
   #renderSort = () => {
@@ -100,18 +169,8 @@ export default class BoardPresenter {
     this.#sortComponent.setSortTypeChangeHandle(this.#handleSortTypeChange);
   };
 
-  #handleFilterChange = () => {
-    console.log(this.#boardFilms);                 //будет в следующем ДЗ
-  };
-
-  #renderFilter = (films) => {
-    this.#filterComponent = new FilterView(films);
-    render(this.#filterComponent, this.#boardContainerMain);
-    this.#filterComponent.setFilterTypeChangeHandle(this.#handleFilterChange);
-  };
-
   #renderFilm = (filmCard, container) => {
-    const filmCardPresenter = new FilmCardPresenter(container, this.#boardComments, this.#handleTaskChange, this.#handleClearPopup);
+    const filmCardPresenter = new FilmCardPresenter(container, this.#boardComments, this.#handleFilmChange, this.#handleClearPopup);
     filmCardPresenter.init(filmCard);
     this.#filmPresenter.set(filmCard.id, filmCardPresenter);
   };
@@ -133,7 +192,7 @@ export default class BoardPresenter {
     render(this.#topRatedContainer, this.#filmsContainer.element);
 
     for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
-      this.#renderFilm(this.#boardFilms[i + 6], this.#topRatedContainer.filmsListContainer);// Временно [i + 6]
+      render(new FilmCardView(this.#boardFilms[i + 6]), this.#topRatedContainer.filmsListContainer);// Временно [i + 6]
     }
   };
 
@@ -141,7 +200,7 @@ export default class BoardPresenter {
     render(this.#mostCommentedContainer, this.#filmsContainer.element);
 
     for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
-      this.#renderFilm(this.#boardFilms[i + 3], this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
+      render(new FilmCardView(this.#boardFilms[i + 3]), this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
     }
   };
 

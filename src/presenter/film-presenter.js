@@ -1,4 +1,4 @@
-import {render, remove} from '../framework/render.js';
+import {render, remove, replace} from '../framework/render.js';
 import {isEscPressed} from '../utils/common.js';
 import {pageBody} from '../const.js';
 import FilmCardView from '../view/film-card-view.js';
@@ -31,12 +31,23 @@ export default class FilmCardPresenter {
   init = (film) => {
     this.#filmCard = film;
 
+    const prevFilmCardComponent = this.#filmCardComponent;
+
     this.#filmCardComponent = new FilmCardView(film);
 
     this.#filmCardComponent.setClickHandler(this.#renderPopup);
     this.#filmCardComponent.setControlButtonClickHandler(this.#handleWatchlistClick, this.#handleWatchedClick, this.#handleFavoriteClick);
 
-    render(this.#filmCardComponent, this.#filmCardContainer);
+    if (prevFilmCardComponent === null) {
+      render(this.#filmCardComponent, this.#filmCardContainer);
+      return;
+    }
+
+    if (this.#filmCardContainer.contains(prevFilmCardComponent.element)) {
+      replace(this.#filmCardComponent, prevFilmCardComponent);
+    }
+
+    remove(prevFilmCardComponent);
   };
 
   resetView = () => {

@@ -1,13 +1,14 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDate, humanizeFilmRuntime} from '../utils/common.js';
+import {humanizeDate, humanizeFilmRuntime, getClassForControlButton} from '../utils/films.js';
 
 const filmReleaseDateFormat = 'YYYY';
 const descriptionMaxLength = 138;
+const CONTROL_BUTTON_ACTIVE_CLASS = 'film-card__controls-item--active';
 
 const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
 
 const createFilmCard = (film) => {
-  const {id, filmInfo, comments} = film;
+  const {id, filmInfo, comments, userDetails} = film;
 
   return (
     `<article class="film-card" id="${id}">
@@ -24,9 +25,9 @@ const createFilmCard = (film) => {
           <span class="film-card__comments">${comments.length} comments</span>
         </a>
         <div class="film-card__controls">
-          <button class="film-card__controls-item film-card__controls-item--add-to-watchlist" type="button">Add to watchlist</button>
-          <button class="film-card__controls-item film-card__controls-item--mark-as-watched" type="button">Mark as watched</button>
-          <button class="film-card__controls-item film-card__controls-item--favorite" type="button">Mark as favorite</button>
+          <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${getClassForControlButton(userDetails.watchlist, CONTROL_BUTTON_ACTIVE_CLASS)}" type="button">Add to watchlist</button>
+          <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${getClassForControlButton(userDetails.alreadyWatched, CONTROL_BUTTON_ACTIVE_CLASS)}" type="button">Mark as watched</button>
+          <button class="film-card__controls-item film-card__controls-item--favorite ${getClassForControlButton(userDetails.favorite, CONTROL_BUTTON_ACTIVE_CLASS)}" type="button">Mark as favorite</button>
         </div>
     </article>`
   );
@@ -62,7 +63,7 @@ export default class FilmCardView extends AbstractView {
       const target = evt.target;
       evt.preventDefault();
 
-      target.classList.toggle('film-card__controls-item--active');
+      target.classList.toggle(CONTROL_BUTTON_ACTIVE_CLASS);
 
       switch (target) {
         case this.element.querySelector('.film-card__controls-item--add-to-watchlist'):

@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+
 
 // Функция из интернета по генерации случайного числа из диапазона
 // Источник - https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_random
@@ -24,48 +24,7 @@ const getRandomElement = (collection) => {
   return collection[randomIndex];
 };
 
-// Приводит в нужный формат дату и время
-const humanizeDate = (date, format) => dayjs(date).format(format);
-
-// Приводит в нужный формат длительность фильма из минут в часы и минуты
-const humanizeFilmRuntime = (item) => {
-  const hours = Math.floor(item / 60);
-  const minutes = item - (60 * hours);
-
-  return `${hours}h ${minutes}m`;
-};
-
-// Отсортировывает комментарии
-const sortComments = (film, comments) => {
-  const filmComments = film.comments;
-  const sortedComments = [];
-
-  for (const comment of comments) {
-    filmComments.forEach((item) => {
-      if (comment.id === item) {
-        sortedComments.push(comment);
-      }
-    });
-  }
-
-  return sortedComments;
-};
-
 // Нажат эскейп
 const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
-};
-
-export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, updateItem};
+export {isEscPressed, getRandomInteger, getRandomElement, generateUniqCollection};

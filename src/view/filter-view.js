@@ -1,21 +1,16 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import {getFilterType} from '../utils/filter.js';
 import {FilterType} from '../const.js';
 
-const getFilterTypeCount = (films) => ({
-  [FilterType.WATCHLIST]: films.filter((item) =>  item.userDetails.watchlist).length,
-  [FilterType.HISTORY]: films.filter((item) => item.userDetails.alreadyWatched).length,
-  [FilterType.FAVORITE]: films.filter((item) => item.userDetails.favorite).length
-});
-
 const createFilter = (films) => {
-  const filter = getFilterTypeCount(films);
+  const filter = getFilterType(films);
 
   return (
     `<nav class="main-navigation">
-    <a href="#all" class="main-navigation__item main-navigation__item--active" data-filter-type=${FilterType.ALL}>All movies</a>
-    <a href="#watchlist" class="main-navigation__item" data-filter-type data-filter-type=${FilterType.WATCHLIST}>Watchlist <span class="main-navigation__item-count">${filter.watchlist}</span></a>
-    <a href="#history" class="main-navigation__item" data-filter-type=${FilterType.HISTORY}>History <span class="main-navigation__item-count">${filter.alreadyWatched}</span></a>
-    <a href="#favorites" class="main-navigation__item" data-filter-type=${FilterType.FAVORITE}>Favorites <span class="main-navigation__item-count">${filter.favorite}</span></a>
+    <a href="#all" class="main-navigation__item main-navigation__item--active" data-filter-type="${FilterType.DEFAULT}">All movies</a>
+    <a href="#watchlist" class="main-navigation__item" data-filter-type="${FilterType.WATCHLIST}">Watchlist <span class="main-navigation__item-count">${filter.watchlist.length}</span></a>
+    <a href="#history" class="main-navigation__item" data-filter-type="${FilterType.HISTORY}">History <span class="main-navigation__item-count">${filter.alreadyWatched.length}</span></a>
+    <a href="#favorites" class="main-navigation__item" data-filter-type="${FilterType.FAVORITE}">Favorites <span class="main-navigation__item-count">${filter.favorite.length}</span></a>
   </nav>`
   );
 };

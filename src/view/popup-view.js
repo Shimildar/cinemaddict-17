@@ -1,8 +1,9 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDate, humanizeFilmRuntime, sortComments} from '../utils/common.js';
+import {humanizeDate, humanizeFilmRuntime, sortComments, getClassForControlButton} from '../utils/films.js';
 
 const POPUP_RELEASE_DATE_FORMAT = 'DD MMMM YYYY';
 const POPUP_COMMENT_DATE_FORMAT = 'YYYY/MM/DD h:mm';
+const CONTROL_BUTTON_ACTIVE_CLASS = 'film-details__control-button--active';
 
 const updateGenreTerm = (currentGenres) => (currentGenres.length > 1) ? 'Genres' : 'Genre';
 
@@ -26,8 +27,6 @@ const createCommentsList = (comments) =>
       </div>
       </li>`
   )).join('');
-
-const getClassForControlButton = (option) => option ? 'film-details__control-button--active' : '';
 
 const createPopup = (film, allComments) => {
   const {filmInfo, comments, userDetails} = film;
@@ -98,9 +97,9 @@ const createPopup = (film, allComments) => {
         </div>
 
         <section class="film-details__controls">
-          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.watchlist)} film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
-          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.alreadyWatched)} film-details__control-button--watched" id="watched" name="watched">Already watched</button>
-          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.favorite)} film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
+          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.watchlist, CONTROL_BUTTON_ACTIVE_CLASS)} film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
+          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.alreadyWatched, CONTROL_BUTTON_ACTIVE_CLASS)} film-details__control-button--watched" id="watched" name="watched">Already watched</button>
+          <button type="button" class="film-details__control-button ${getClassForControlButton(userDetails.favorite, CONTROL_BUTTON_ACTIVE_CLASS)} film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
         </section>
       </div>
 
@@ -180,7 +179,7 @@ export default class PopupView extends AbstractView {
       const target = evt.target;
       evt.preventDefault();
 
-      target.classList.toggle('film-details__control-button--active');
+      target.classList.toggle(CONTROL_BUTTON_ACTIVE_CLASS);
 
       switch (target) {
         case this.element.querySelector('.film-details__control-button--watchlist'):

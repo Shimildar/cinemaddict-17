@@ -7,12 +7,12 @@ const extraContainerTitles = {
 
 const SortType = {
   DEFAULT: 'default',
-  DATE: 'date-sort',
-  RATING: 'rating-sort'
+  DATE_DOWN: 'date-down',
+  RATING_DOWN: 'rating-sort'
 };
 
 const FilterType = {
-  ALL: 'all',
+  DEFAULT: 'all',
   WATCHLIST: 'watchlist',
   HISTORY: 'alreadyWatched',
   FAVORITE: 'favorite'
