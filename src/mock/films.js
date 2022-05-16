@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import {getRandomInteger, generateUniqCollection, getRandomElement} from '../utils.js';
+import { nanoid } from 'nanoid';
+import {getRandomInteger, generateUniqCollection, getRandomElement} from '../utils/common.js';
 
 const randomTitles = [
   'Terminator',
@@ -113,13 +114,13 @@ const generateCommentsIdCollection = () => {
   return commentsIdCollection;
 };
 
-export const generateFilm = (item, index) => {
+export const generateFilm = () => {
   const writers = generateUniqCollection(Array.from({length: getRandomInteger(1, 4)}, () => getRandomElement(randomWriters)));
   const actors = generateUniqCollection(Array.from({length: getRandomInteger(3, 6)}, () => getRandomElement(randomActors)));
   const genre = generateUniqCollection(Array.from({length: getRandomInteger(1, 3)}, () => getRandomElement(randomGenres)));
 
   return {
-    id: index +1,
+    id: nanoid(),
     comments: generateCommentsIdCollection(),
     filmInfo: {
       title: getRandomElement(randomTitles),

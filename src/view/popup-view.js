@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDate, humanizeFilmRuntime, sortComments} from '../utils.js';
+import {humanizeDate, humanizeFilmRuntime, sortComments} from '../utils/common.js';
 
 const POPUP_RELEASE_DATE_FORMAT = 'DD MMMM YYYY';
 const POPUP_COMMENT_DATE_FORMAT = 'YYYY/MM/DD h:mm';
@@ -160,13 +160,39 @@ export default class PopupView extends AbstractView {
     return createPopup(this.film, this.comments);
   }
 
-  setCloseButtonClickHandler = (callback) => {
-    this._callback.click = callback;
-    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#clickHandler);
+  setCloseBtnClickHandler = (callback) => {
+    this._callback.closeBtnclick = callback;
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closeBtnClickHandler);
   };
 
-  #clickHandler = (evt) => {
+  #closeBtnClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.click();
+
+    this._callback.closeBtnclick();
+  };
+
+  setControlButtonClickHandler = (watchlistClick, watchedClick, favoriteClick) => {
+    this._callback.watchlistClick = watchlistClick;
+    this._callback.watchedClick = watchedClick;
+    this._callback.favoriteClick = favoriteClick;
+
+    this.element.querySelector('.film-details__controls').addEventListener('click', (evt) => {
+      const target = evt.target;
+      evt.preventDefault();
+
+      target.classList.toggle('film-details__control-button--active');
+
+      switch (target) {
+        case this.element.querySelector('.film-details__control-button--watchlist'):
+          this._callback.watchlistClick();
+          break;
+        case this.element.querySelector('.film-details__control-button--watched'):
+          this._callback.watchedClick();
+          break;
+        case this.element.querySelector('.film-details__control-button--favorite'):
+          this._callback.favoriteClick();
+          break;
+      }
+    });
   };
 }

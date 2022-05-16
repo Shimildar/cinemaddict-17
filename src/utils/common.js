@@ -51,13 +51,21 @@ const sortComments = (film, comments) => {
   return sortedComments;
 };
 
-// Обрезает длину строки
-const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
-
-// Находит нужный элемент из массива сравнивая id
-const getItemFromCollection = (array, target) => array.find((item) => item.id === Number(target.id));
-
 // Нажат эскейп
 const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
-export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength, getItemFromCollection};
+const updateItem = (items, update) => {
+  const index = items.findIndex((item) => item.id === update.id);
+
+  if (index === -1) {
+    return items;
+  }
+
+  return [
+    ...items.slice(0, index),
+    update,
+    ...items.slice(index + 1),
+  ];
+};
+
+export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, updateItem};

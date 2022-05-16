@@ -1,8 +1,10 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDate, humanizeFilmRuntime, cutTextLength} from '../utils.js';
+import {humanizeDate, humanizeFilmRuntime} from '../utils/common.js';
 
 const filmReleaseDateFormat = 'YYYY';
 const descriptionMaxLength = 138;
+
+const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
 
 const createFilmCard = (film) => {
   const {id, filmInfo, comments} = film;
@@ -40,4 +42,39 @@ export default class FilmCardView extends AbstractView {
   get template() {
     return createFilmCard(this.film);
   }
+
+  setClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.querySelector('.film-card__poster').addEventListener('click', this.#clickHandler);
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
+
+  setControlButtonClickHandler = (watchlistClick, watchedClick, favoriteClick) => {
+    this._callback.watchlistClick = watchlistClick;
+    this._callback.watchedClick = watchedClick;
+    this._callback.favoriteClick = favoriteClick;
+
+    this.element.querySelector('.film-card__controls').addEventListener('click', (evt) => {
+      const target = evt.target;
+      evt.preventDefault();
+
+      target.classList.toggle('film-card__controls-item--active');
+
+      switch (target) {
+        case this.element.querySelector('.film-card__controls-item--add-to-watchlist'):
+          this._callback.watchlistClick();
+          break;
+        case this.element.querySelector('.film-card__controls-item--mark-as-watched'):
+          this._callback.watchedClick();
+          break;
+        case this.element.querySelector('.film-card__controls-item--favorite'):
+          this._callback.favoriteClick();
+          break;
+      }
+    });
+  };
 }
