@@ -5,4 +5,17 @@ const extraContainerTitles = {
   MOST_COMMENTED: 'Most commented'
 };
 
-export {extraContainerTitles, pageBody};
+const SortType = {
+  DEFAULT: 'default',
+  DATE: 'date-sort',
+  RATING: 'rating-sort'
+};
+
+const FilterType = {
+  ALL: 'all',
+  WATCHLIST: 'watchlist',
+  HISTORY: 'alreadyWatched',
+  FAVORITE: 'favorite'
+};
+
+export {extraContainerTitles, pageBody, SortType, FilterType};
