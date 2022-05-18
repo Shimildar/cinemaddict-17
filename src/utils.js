@@ -37,16 +37,9 @@ const humanizeFilmRuntime = (item) => {
 
 // Отсортировывает комментарии
 const sortComments = (film, comments) => {
-  const filmComments = film.comments;
   const sortedComments = [];
 
-  for (const comment of comments) {
-    filmComments.forEach((item) => {
-      if (comment.id === item) {
-        sortedComments.push(comment);
-      }
-    });
-  }
+  film.comments.forEach((id) => sortedComments.push(comments.find((item) => item.id === id)));
 
   return sortedComments;
 };
@@ -54,10 +47,7 @@ const sortComments = (film, comments) => {
 // Обрезает длину строки
 const cutTextLength = (text, maxLength) => (text.length > 140) ? text.slice(0, maxLength).concat('...') : text;
 
-// Находит нужный элемент из массива сравнивая id
-const getItemFromCollection = (array, target) => array.find((item) => item.id === Number(target.id));
-
 // Нажат эскейп
 const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
-export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength, getItemFromCollection};
+export {isEscPressed, getRandomInteger, getRandomElement, humanizeDate, humanizeFilmRuntime, generateUniqCollection, sortComments, cutTextLength};
