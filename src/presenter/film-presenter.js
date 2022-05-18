@@ -1,7 +1,7 @@
 import {render, remove, replace} from '../framework/render.js';
 import {isEscPressed} from '../utils/common.js';
 import {pageBody} from '../const.js';
-import FilmCardView from '../view/film-card-view.js';
+import FilmView from '../view/film-view.js';
 import PopupView from '../view/popup-view.js';
 
 const Mode = {
@@ -9,7 +9,7 @@ const Mode = {
   POPUP: 'POPUP',
 };
 
-export default class FilmCardPresenter {
+export default class FilmPresenter {
   #filmCardContainer = null;
   #changeData = null;
   #clearPopup = null;
@@ -33,7 +33,7 @@ export default class FilmCardPresenter {
 
     const prevFilmCardComponent = this.#filmCardComponent;
 
-    this.#filmCardComponent = new FilmCardView(film);
+    this.#filmCardComponent = new FilmView(film);
 
     this.#filmCardComponent.setClickHandler(this.#renderPopup);
     this.#filmCardComponent.setControlButtonClickHandler(this.#handleWatchlistClick, this.#handleWatchedClick, this.#handleFavoriteClick);
@@ -57,15 +57,15 @@ export default class FilmCardPresenter {
   };
 
   #handleWatchlistClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { watchlist: !this.#filmCard.userDetails.watchlist }});
+    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, watchlist: !this.#filmCard.userDetails.watchlist }});
   };
 
   #handleWatchedClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { alreadyWatched: !this.#filmCard.userDetails.alreadyWatched }});
+    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, alreadyWatched: !this.#filmCard.userDetails.alreadyWatched }});
   };
 
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { favorite: !this.#filmCard.userDetails.favorite }});
+    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, favorite: !this.#filmCard.userDetails.favorite }});
   };
 
   #renderPopup = () => {

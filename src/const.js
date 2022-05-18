@@ -1,6 +1,6 @@
 const pageBody = document.querySelector('body');
 
-const extraContainerTitles = {
+const ExtraContainerTitles = {
   TOP_RATED: 'Top rated',
   MOST_COMMENTED: 'Most commented'
 };
@@ -18,4 +18,4 @@ const FilterType = {
   FAVORITE: 'favorite'
 };
 
-export {extraContainerTitles, pageBody, SortType, FilterType};
+export {ExtraContainerTitles, pageBody, SortType, FilterType};
