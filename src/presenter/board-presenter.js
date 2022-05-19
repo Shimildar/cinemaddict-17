@@ -10,7 +10,7 @@ import NoFilmMessageView from '../view/no-film-view.js';
 import {render, remove} from '../framework/render.js';
 import {ExtraContainerTitles} from '../const.js';
 import {updateItem} from '../utils/films.js';
-import {getFilterType} from '../utils/filter.js';
+// import {getFilterType} from '../utils/filter.js';
 import {sortDateDown, sortRatingDown} from '../utils/sort.js';
 import {SortType, FilterType} from '../const.js';
 import FilmPresenter from './film-presenter.js';
@@ -32,7 +32,7 @@ export default class BoardPresenter {
 
   #renderedFilmCount = PER_STEP_FILM_COUNT;
   #filmPresenter = new Map();
-  #currentFilterType = FilterType.DEFAULT;
+  // #currentFilterType = FilterType.DEFAULT;
   #currentSortType = SortType.DEFAULT;
   #sourcedFilms = [];
   #filteredFilms = null;
@@ -104,8 +104,36 @@ export default class BoardPresenter {
     render(this.#filterComponent, this.#boardContainerMain);
   };
 
+  #sortFilms = (sortType) => {
+
+    switch (sortType) {
+      case SortType.DATE_DOWN:
+        this.#boardFilms.sort(sortDateDown);
+        break;
+      case SortType.RATING_DOWN:
+        this.#boardFilms.sort(sortRatingDown);
+        break;
+      default:
+
+        this.#boardFilms = [...this.#sourcedFilms];
+    }
+
+    this.#currentSortType = sortType;
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortFilms(sortType);
+    this.#clearFilmList();
+    this.#renderFilmList(this.#boardFilms);
+  };
+
   #renderSort = () => {
     render(this.#sortComponent, this.#boardContainerMain);
+    this.#sortComponent.setSortTypeChangeHandle(this.#handleSortTypeChange);
   };
 
   #renderFilm = (filmCard, container) => {
