@@ -10,7 +10,7 @@ import NoFilmMessageView from '../view/no-film-view.js';
 import {render, remove} from '../framework/render.js';
 import {ExtraContainerTitles} from '../const.js';
 import {updateItem} from '../utils/films.js';
-// import {getFilterType} from '../utils/filter.js';
+import {getFilterType} from '../utils/filter.js';
 import {sortDateDown, sortRatingDown} from '../utils/sort.js';
 import {SortType, FilterType} from '../const.js';
 import FilmPresenter from './film-presenter.js';
@@ -32,7 +32,7 @@ export default class BoardPresenter {
 
   #renderedFilmCount = PER_STEP_FILM_COUNT;
   #filmPresenter = new Map();
-  // #currentFilterType = FilterType.DEFAULT;
+  #currentFilterType = FilterType.DEFAULT;
   #currentSortType = SortType.DEFAULT;
   #sourcedFilms = [];
   #filteredFilms = null;
@@ -99,9 +99,42 @@ export default class BoardPresenter {
     this.#filmPresenter.forEach((presenter) => presenter.resetView());
   };
 
+  #filterFilms = (filterType) => {
+    this.#filteredFilms = getFilterType(this.#boardFilms);
+
+    switch (filterType) {
+
+      case FilterType.WATCHLIST:
+        this.#renderFilmList(this.#filteredFilms.watchlist);
+        break;
+      case FilterType.HISTORY:
+        this.#renderFilmList(this.#filteredFilms.alreadyWatched);
+        break;
+      case FilterType.FAVORITE:
+        this.#renderFilmList(this.#filteredFilms.favorite);
+        break;
+      default:
+
+        this.#renderFilmList(this.#filteredFilms.all);
+    }
+
+    this.#currentFilterType = filterType;
+    this.#filteredFilms = null;
+  };
+
+  #handleFilterTypeChange = (filterType) => {
+    if (this.#currentFilterType === filterType) {
+      return;
+    }
+
+    this.#clearFilmList();
+    this.#filterFilms(filterType);
+  };
+
   #renderFilter = (films) => {
     this.#filterComponent = new FilterView(films);
     render(this.#filterComponent, this.#boardContainerMain);
+    this.#filterComponent.setFilterTypeChangeHandle(this.#handleFilterTypeChange);
   };
 
   #sortFilms = (sortType) => {
