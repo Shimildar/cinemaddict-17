@@ -18,4 +18,9 @@ const FilterType = {
   FAVORITE: 'favorite'
 };
 
-export {ExtraContainerTitles, pageBody, SortType, FilterType};
+const PopupDateFormat = {
+  COMMENT: 'YYYY/MM/DD h:mm',
+  FILM_RELEASE: 'DD MMMM YYYY'
+};
+
+export {ExtraContainerTitles, pageBody, SortType, FilterType, PopupDateFormat};
