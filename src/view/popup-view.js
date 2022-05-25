@@ -1,8 +1,7 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeDate, humanizeFilmRuntime, sortComments, getClassForControlButton} from '../utils/films.js';
+import {PopupDateFormat} from '../const.js';
 
-const POPUP_RELEASE_DATE_FORMAT = 'DD MMMM YYYY';
-const POPUP_COMMENT_DATE_FORMAT = 'YYYY/MM/DD h:mm';
 const CONTROL_BUTTON_ACTIVE_CLASS = 'film-details__control-button--active';
 
 const updateGenreTerm = (currentGenres) => (currentGenres.length > 1) ? 'Genres' : 'Genre';
@@ -15,21 +14,23 @@ const createCommentsList = (comments) =>
   comments.map(({author, comment, date, emotion}) => (
     `<li class="film-details__comment">
       <span class="film-details__comment-emoji">
-        <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
+        <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-${emotion}">
       </span>
       <div>
         <p class="film-details__comment-text">${comment}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
-          <span class="film-details__comment-day">${humanizeDate(date, POPUP_COMMENT_DATE_FORMAT)}</span>
+          <span class="film-details__comment-day">${humanizeDate(date, PopupDateFormat.COMMENT)}</span>
           <button class="film-details__comment-delete">Delete</button>
         </p>
       </div>
       </li>`
   )).join('');
 
+const getEmodji = (emoji) => (emoji) ? `<img src="images/emoji/${emoji}.png" width="55" height="55" alt="emoji-${emoji}">` : '';
+
 const createPopup = (film, allComments) => {
-  const {filmInfo, comments, userDetails} = film;
+  const {filmInfo, comments, userDetails, emoji} = film;
   const popupComments = sortComments(film, allComments);
 
   return (
@@ -73,7 +74,7 @@ const createPopup = (film, allComments) => {
               </tr>
               <tr class="film-details__row">
                 <td class="film-details__term">Release Date</td>
-                <td class="film-details__cell">${humanizeDate(filmInfo.release.date, POPUP_RELEASE_DATE_FORMAT)}</td>
+                <td class="film-details__cell">${humanizeDate(filmInfo.release.date, PopupDateFormat.FILM_RELEASE)}</td>
               </tr>
               <tr class="film-details__row">
                 <td class="film-details__term">Runtime</td>
@@ -112,7 +113,7 @@ const createPopup = (film, allComments) => {
           </ul>
 
           <div class="film-details__new-comment">
-            <div class="film-details__add-emoji-label"></div>
+            <div class="film-details__add-emoji-label">${getEmodji(emoji)}</div>
 
             <label class="film-details__comment-label">
               <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
@@ -147,27 +148,23 @@ const createPopup = (film, allComments) => {
   );
 };
 
-export default class PopupView extends AbstractView {
+export default class PopupView extends AbstractStatefulView {
 
   constructor(film, comments) {
     super();
-    this.film = film;
+    this._state = PopupView.convertFilmToState(film);
     this.comments = comments;
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createPopup(this.film, this.comments);
+    return createPopup(this._state, this.comments);
   }
 
   setCloseBtnClickHandler = (callback) => {
     this._callback.closeBtnclick = callback;
     this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closeBtnClickHandler);
-  };
-
-  #closeBtnClickHandler = (evt) => {
-    evt.preventDefault();
-
-    this._callback.closeBtnclick();
   };
 
   setControlButtonClickHandler = (watchlistClick, watchedClick, favoriteClick) => {
@@ -193,5 +190,42 @@ export default class PopupView extends AbstractView {
           break;
       }
     });
+  };
+
+  #setInnerHandlers = () => {
+    this.element.querySelectorAll('.film-details__emoji-item').forEach((input) => input.addEventListener('click', this.#confirmEmojiHandler));
+  };
+
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setControlButtonClickHandler(this._callback.watchlistClick, this._callback.watchedClick, this._callback.favoriteClick);
+    this.setCloseBtnClickHandler(this._callback.closeBtnclick);
+  };
+
+  #closeBtnClickHandler = (evt) => {
+    evt.preventDefault();
+
+    this._callback.closeBtnclick();
+  };
+
+  #confirmEmojiHandler = (evt) => {
+    const scrollPosition = this.element.scrollTop;
+    const target = evt.target.value;
+
+    this.updateElement({
+      emoji: target
+    });
+    this.element.scrollTop = scrollPosition;
+    this.element.querySelector(`#emoji-${target}`).checked = true;
+  };
+
+  static convertFilmToState = (film) => ({...film, emoji: false});
+
+  static convertStateToFilm = (state) => {
+    const film = {...state};
+
+    delete film.emoji;
+
+    return film;
   };
 }
