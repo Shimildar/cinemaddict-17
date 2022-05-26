@@ -27,7 +27,7 @@ const getRandomElement = (collection) => {
 // Приводит в нужный формат дату и время
 const humanizeDate = (date, format) => dayjs(date).format(format);
 
-// Приводит в нужный формат длительность фильма из минут в часы и минуты
+// Приводит в нужный формат длительность фильма из минут в часы и минуты.
 const humanizeFilmRuntime = (item) => {
   const hours = Math.floor(item / 60);
   const minutes = item - (60 * hours);
