@@ -3,6 +3,7 @@ import {isEscPressed} from '../utils/common.js';
 import {pageBody} from '../const.js';
 import FilmView from '../view/film-view.js';
 import PopupView from '../view/popup-view.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -36,7 +37,7 @@ export default class FilmPresenter {
     this.#filmCardComponent = new FilmView(film);
 
     this.#filmCardComponent.setClickHandler(this.#renderPopup);
-    this.#filmCardComponent.setControlButtonClickHandler(this.#handleWatchlistClick, this.#handleWatchedClick, this.#handleFavoriteClick);
+    this.#filmCardComponent.setControlButtonClickHandler(this.#handleControlButtonClick);
 
     if (prevFilmCardComponent === null) {
       render(this.#filmCardComponent, this.#filmCardContainer);
@@ -56,16 +57,12 @@ export default class FilmPresenter {
     }
   };
 
-  #handleWatchlistClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, watchlist: !this.#filmCard.userDetails.watchlist }});
-  };
-
-  #handleWatchedClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, alreadyWatched: !this.#filmCard.userDetails.alreadyWatched }});
-  };
-
-  #handleFavoriteClick = () => {
-    this.#changeData({...this.#filmCard, userDetails: { ...this.#filmCard.userDetails, favorite: !this.#filmCard.userDetails.favorite }});
+  #handleControlButtonClick = (update) => {
+    this.#changeData(
+      UserAction.UPDATE_FILM,
+      UpdateType.MINOR,
+      update
+    );
   };
 
   #renderPopup = () => {
@@ -74,11 +71,31 @@ export default class FilmPresenter {
 
     this.#filmPopupComponent = new PopupView(this.#filmCard, this.#comments);
     this.#filmPopupComponent.setCloseBtnClickHandler(this.#removePopupFromPage);
-    this.#filmPopupComponent.setControlButtonClickHandler(this.#handleWatchlistClick, this.#handleWatchedClick, this.#handleFavoriteClick);
+    this.#filmPopupComponent.setControlButtonClickHandler(this.#handleControlButtonClick);
+    this.#filmPopupComponent.setCommentAddHandler(this.#handleCommentAddClick);
+    this.#filmPopupComponent.setCommentDeleteHandler(this.#handleCommentDeleteClick);
+
     pageBody.classList.add('hide-overflow');
     document.addEventListener('keydown', this.#onEscKeyDown);
-
     render(this.#filmPopupComponent, pageBody);
+  };
+
+  #handleCommentAddClick = (update, comment) => {
+    this.#changeData(
+      UserAction.ADD_COMMENT,
+      UpdateType.MINOR,
+      update,
+      comment
+    );
+  };
+
+  #handleCommentDeleteClick = (update, comment) => {
+    this.#changeData(
+      UserAction.DELETE_COMMENT,
+      UpdateType.MINOR,
+      update,
+      comment
+    );
   };
 
   #removePopupFromPage = () => {
