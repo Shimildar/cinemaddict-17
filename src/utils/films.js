@@ -1,19 +1,5 @@
 import dayjs from 'dayjs';
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
-};
-
 // Приводит в нужный формат дату и время
 const humanizeDate = (date, format) => dayjs(date).format(format);
 
@@ -41,6 +27,6 @@ const sortComments = (film, comments) => {
   return sortedComments;
 };
 
-const getClassForControlButton = (option, className) => option ? className : '';
+const isCtrlEnterPressed = (evt) => (evt.keyCode === 10 || evt.keyCode === 13) && (evt.ctrlKey || evt.metaKey);
 
-export {updateItem, humanizeDate, humanizeFilmRuntime, sortComments, getClassForControlButton};
+export {humanizeDate, humanizeFilmRuntime, sortComments, isCtrlEnterPressed};

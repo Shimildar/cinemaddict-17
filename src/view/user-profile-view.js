@@ -1,4 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import { UserStatus } from '../const.js';
 
 const MIN_FOR_NOVICE = 1;
 const MAX_FOR_NOVICE = 10;
@@ -11,13 +12,13 @@ const createUserProfile = (films) => {
   const watchedFilms = films.filter((film) => film.userDetails.alreadyWatched);
 
   if (watchedFilms.length >= MIN_FOR_NOVICE && watchedFilms.length <= MAX_FOR_NOVICE) {
-    status = 'Novice';
+    status = UserStatus.NOVICE;
   } else if (watchedFilms.length >= MIN_FOR_FAN && watchedFilms.length <= MAX_FOR_FAN) {
-    status = 'Fan';
+    status = UserStatus.FAN;
   } else if (watchedFilms.length >= MIN_FOR_MOVIE_BUFF) {
-    status = 'Movie Buff';
+    status = UserStatus.MOVIE_BUFF;
   } else {
-    status = '';
+    status = UserStatus.NONE;
   }
 
   return (
