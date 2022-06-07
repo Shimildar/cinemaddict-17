@@ -1,5 +1,5 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import {humanizeDate, humanizeFilmRuntime, sortComments, isCtrlEnterPressed} from '../utils/films.js';
+import {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed} from '../utils/films.js';
 import {getRandomInteger} from '../utils/common.js';
 import {PopupDateFormat} from '../const.js';
 import he from 'he';
@@ -44,7 +44,7 @@ const createPopup = (film) => {
         </div>
         <div class="film-details__info-wrap">
           <div class="film-details__poster">
-            <img class="film-details__poster-img" src="./images/posters/${filmInfo.poster}" alt="">
+            <img class="film-details__poster-img" src="${filmInfo.poster}" alt="">
 
             <p class="film-details__age">+${filmInfo.ageRating}</p>
           </div>
@@ -154,7 +154,7 @@ export default class PopupView extends AbstractStatefulView {
 
   constructor(film, comments) {
     super();
-    this._state = PopupView.convertFilmToState(film, sortComments(film, comments));
+    this._state = PopupView.convertFilmToState(film, comments);
 
     this.#setInnerHandlers();
   }

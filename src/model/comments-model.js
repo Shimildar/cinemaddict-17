@@ -1,12 +1,27 @@
-import {generateComment} from '../mock/comments.js';
 import Observable from '../framework/observable.js';
 
+
 export default class CommentsModel extends Observable {
-  #comments = Array.from({length: 500}, generateComment);
+  #commentsApiService = null;
+  #comments = [];
+
+  constructor(commentsApiService) {
+    super();
+    this.#commentsApiService = commentsApiService;
+  }
 
   get comments() {
     return this.#comments;
   }
+
+  init = async (film) => {
+    try {
+      const comments = await this.#commentsApiService.getComments(film);
+      this.#comments = comments.map(this.#adaptToClient);
+    } catch(err) {
+      this.#comments = [];
+    }
+  };
 
   addComment = (update) => {
 
@@ -28,4 +43,12 @@ export default class CommentsModel extends Observable {
       ...this.#comments.slice(index + 1),
     ];
   };
+
+  #adaptToClient = (comment) => {
+    const adaptedComment = {...comment};
+    adaptedComment.date = adaptedComment.date !== null ? new Date(adaptedComment.date) : adaptedComment.date;
+
+    return adaptedComment;
+  };
 }
+
