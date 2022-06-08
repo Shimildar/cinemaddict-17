@@ -19,12 +19,12 @@ export default class FilmPresenter {
   #filmPopupComponent = null;
 
   #filmCard = null;
-  #comments = null;
+  #commentsModel = null;
   #mode = Mode.DEFAULT;
 
-  constructor(filmCardContainer, comments, changeData, clearPopup) {
+  constructor(filmCardContainer, commentsModel, changeData, clearPopup) {
     this.#filmCardContainer = filmCardContainer;
-    this.#comments = comments;
+    this.#commentsModel = commentsModel;
     this.#changeData = changeData;
     this.#clearPopup = clearPopup;
   }
@@ -65,11 +65,12 @@ export default class FilmPresenter {
     );
   };
 
-  #renderPopup = () => {
+  #renderPopup = async () => {
     this.#clearPopup();
     this.#mode = Mode.POPUP;
+    await this.#commentsModel.init(this.#filmCard);
 
-    this.#filmPopupComponent = new PopupView(this.#filmCard, this.#comments);
+    this.#filmPopupComponent = new PopupView(this.#filmCard, this.#commentsModel.comments);
     this.#filmPopupComponent.setCloseBtnClickHandler(this.#removePopupFromPage);
     this.#filmPopupComponent.setControlButtonClickHandler(this.#handleControlButtonClick);
     this.#filmPopupComponent.setCommentAddHandler(this.#handleCommentAddClick);
