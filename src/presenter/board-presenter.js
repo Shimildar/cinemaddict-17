@@ -12,10 +12,15 @@ import {SortType, UserAction, UpdateType} from '../const.js';
 import FilmPresenter from './film-presenter.js';
 import FilmView from '../view/film-view.js';
 import LoadingView from '../view/loading-view.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const PER_STEP_FILM_COUNT = 5;
 const TOP_RATED_LIST_COUNT = 2;
 const MOST_COMMENTED_LIST_COUNT = 2;
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class BoardPresenter {
   #boardContainer = null;
@@ -28,6 +33,7 @@ export default class BoardPresenter {
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.ALL;
   #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   #sortComponent = null;
   #noFilmMessageComponent = null;
@@ -46,6 +52,7 @@ export default class BoardPresenter {
 
     this.#filmsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
+    this.#commentsModel.addObserver(this.#handleModelEvent);
   }
 
   get films() {
@@ -67,7 +74,11 @@ export default class BoardPresenter {
     this.#renderBoard();
   };
 
-  #clearBoard = ({resetRenderedTaskCount = false, resetSortType = false} = {}) => {
+  #clearBoard = ({resetRenderedTaskCount = false, resetSortType = false, clearSort = false} = {}) => {
+    if(clearSort) {
+      remove(this.#sortComponent);
+      return;
+    }
     const taskCount = this.films.length;
 
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
@@ -93,8 +104,11 @@ export default class BoardPresenter {
     }
   };
 
-  #renderBoard = () => {
-
+  #renderBoard = ({renderSort = false} = {}) => {
+    if (renderSort) {
+      this.#renderSort();
+      return;
+    }
     render(this.#filmsContainer, this.#boardContainer);
     render(this.#filmsList, this.#filmsContainer.element);
 
@@ -122,20 +136,39 @@ export default class BoardPresenter {
     this.#renderMostCommentedFilmList();
   };
 
-  #handleViewAction = (actionType, updateType, update, comment) => {
+  #handleViewAction = async (actionType, updateType, update, comment) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_FILM:
-        this.#filmsModel.updateFilm(updateType, update);
+        try {
+          await this.#filmsModel.updateFilm(updateType, update);
+          if (document.querySelector('.film-details')) {
+            this.#filmPresenter.get(update.id).setPopupUpdate(actionType, update);
+          }
+        } catch(err) {
+          this.#filmPresenter.get(update.id).setControlButtonsAborting();
+        }
         break;
       case UserAction.ADD_COMMENT:
-        this.#commentsModel.addComment(comment);
-        this.#filmsModel.updateFilm(updateType, update);
+        try {
+          await this.#commentsModel.addComment(updateType, update, comment);
+          this.#filmPresenter.get(update).setPopupUpdate(actionType);
+        } catch {
+          this.#filmPresenter.get(update).setSaveAborting();
+        }
         break;
       case UserAction.DELETE_COMMENT:
-        this.#commentsModel.deleteComment(comment);
-        this.#filmsModel.updateFilm(updateType, update);
+        try {
+          await this.#commentsModel.deleteComment(updateType, update, comment);
+          this.#filmPresenter.get(update.id).setPopupUpdate(actionType);
+        } catch(err) {
+          this.#filmPresenter.get(update.id).setDeleteAborting();
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -144,6 +177,12 @@ export default class BoardPresenter {
         this.#filmPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
+        if (document.querySelector('.film-details')) {
+          this.#filmPresenter.get(data.id).init(data);
+          this.#clearBoard({clearSort: true});
+          this.#renderBoard({renderSort: true});
+          return;
+        }
         this.#clearBoard();
         this.#renderBoard();
         break;

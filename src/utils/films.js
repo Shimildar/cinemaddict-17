@@ -11,22 +11,7 @@ const humanizeFilmRuntime = (item) => {
   return `${hours}h ${minutes}m`;
 };
 
-// Отсортировывает комментарии
-const sortComments = (film, comments) => {
-  const filmComments = film.comments;
-  const sortedComments = [];
-
-  for (const comment of comments) {
-    filmComments.forEach((item) => {
-      if (comment.id === item) {
-        sortedComments.push(comment);
-      }
-    });
-  }
-
-  return sortedComments;
-};
-
 const isCtrlEnterPressed = (evt) => (evt.keyCode === 10 || evt.keyCode === 13) && (evt.ctrlKey || evt.metaKey);
+const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
-export {humanizeDate, humanizeFilmRuntime, sortComments, isCtrlEnterPressed};
+export {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed, isEscPressed};

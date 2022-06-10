@@ -1,7 +1,7 @@
-import Observable from '../framework/observable.js';
+import ObservableModel from '../framework/observeble-model.js';
 
 
-export default class CommentsModel extends Observable {
+export default class CommentsModel extends ObservableModel {
   #commentsApiService = null;
   #comments = [];
 
@@ -17,34 +17,47 @@ export default class CommentsModel extends Observable {
   init = async (film) => {
     try {
       const comments = await this.#commentsApiService.getComments(film);
-      this.#comments = comments.map(this.#adaptToClient);
+      this.#comments = comments.map(this.#adaptCommentToClient);
     } catch(err) {
       this.#comments = [];
     }
   };
 
-  addComment = (update) => {
+  addComment = async (updateType, filmId, comment) => {
 
-    this.#comments = [
-      update,
-      ...this.#comments,
-    ];
+    try {
+      const response = await this.#commentsApiService.addComment(filmId, comment);
+      const updatedFilm = this._adaptFilmToClient(response.movie);
+      this.#comments = response.comments.map((item) => this.#adaptCommentToClient(item));
+
+      this._notify(updateType, updatedFilm);
+    } catch(err) {
+      throw new Error('Can\'t add comment');
+    }
   };
 
-  deleteComment = (update) => {
-    const index = this.#comments.findIndex((comment) => comment.id === update.id);
+  deleteComment = async (updateType, updatedFilm, commentId) => {
+    const index = this.#comments.findIndex((comment) => comment.id === commentId);
 
     if (index === -1) {
-      throw new Error('Can\'t delete unexisting task');
+      throw new Error('Can\'t delete unexisting comment');
     }
 
-    this.#comments = [
-      ...this.#comments.slice(0, index),
-      ...this.#comments.slice(index + 1),
-    ];
+    try {
+      await this.#commentsApiService.deleteComment(commentId);
+
+      this.#comments = [
+        ...this.#comments.slice(0, index),
+        ...this.#comments.slice(index + 1),
+      ];
+
+      this._notify(updateType, updatedFilm);
+    } catch(err) {
+      throw new Error('Can\'t delete comment');
+    }
   };
 
-  #adaptToClient = (comment) => {
+  #adaptCommentToClient = (comment) => {
     const adaptedComment = {...comment};
     adaptedComment.date = adaptedComment.date !== null ? new Date(adaptedComment.date) : adaptedComment.date;
 

@@ -1,5 +1,5 @@
 import {render, remove, replace} from '../framework/render.js';
-import {isEscPressed} from '../utils/common.js';
+import {isEscPressed} from '../utils/films.js';
 import {pageBody} from '../const.js';
 import FilmView from '../view/film-view.js';
 import PopupView from '../view/popup-view.js';
@@ -29,6 +29,10 @@ export default class FilmPresenter {
     this.#clearPopup = clearPopup;
   }
 
+  get popupComments() {
+    return this.#commentsModel.comments;
+  }
+
   init = (film) => {
     this.#filmCard = film;
 
@@ -51,10 +55,76 @@ export default class FilmPresenter {
     remove(prevFilmCardComponent);
   };
 
+  setControlButtonsAborting = () => {
+    if (this.#mode === Mode.POPUP) {
+      const resetPopupFormState = () => {
+        this.#filmPopupComponent.updateElement({
+          isDisabled: false
+        });
+      };
+      this.#filmPopupComponent.setButtonsShake(resetPopupFormState);
+    }
+
+    const resetFilmFormState = () => {
+      this.#filmCardComponent.updateElement({
+        isDisabled: false,
+      });
+    };
+
+    this.#filmCardComponent.shake(resetFilmFormState);
+  };
+
+  setSaveAborting = () => {
+    const resetFormState = () => {
+      this.#filmPopupComponent.updateElement({
+        isSaving: false
+      });
+    };
+    this.#filmPopupComponent.setFormShake(resetFormState);
+  };
+
+  setDeleteAborting = () => {
+    const resetFormState = () => {
+      this.#filmPopupComponent.updateElement({
+        isDeleting: false
+      });
+    };
+    this.#filmPopupComponent.setDeleteButtonShake(resetFormState);
+  };
+
+  setPopupUpdate = (actionType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_FILM:
+        this.#filmPopupComponent.updateElement({
+          userDetails: update.userDetails,
+          isDisabled: false
+        });
+        break;
+      case UserAction.ADD_COMMENT:
+        this.#filmPopupComponent.updateElement({
+          popupComments: this.popupComments,
+          description: '',
+          emoji: false,
+          isSaving: false,
+        });
+        break;
+      case UserAction.DELETE_COMMENT:
+        this.#filmPopupComponent.updateElement({
+          popupComments: this.popupComments,
+          isDeleting: false,
+        });
+        break;
+    }
+  };
+
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
       this.#removePopupFromPage();
     }
+  };
+
+  destroy = () => {
+    remove(this.#filmCardComponent);
   };
 
   #handleControlButtonClick = (update) => {
@@ -70,7 +140,7 @@ export default class FilmPresenter {
     this.#mode = Mode.POPUP;
     await this.#commentsModel.init(this.#filmCard);
 
-    this.#filmPopupComponent = new PopupView(this.#filmCard, this.#commentsModel.comments);
+    this.#filmPopupComponent = new PopupView(this.#filmCard, this.popupComments);
     this.#filmPopupComponent.setCloseBtnClickHandler(this.#removePopupFromPage);
     this.#filmPopupComponent.setControlButtonClickHandler(this.#handleControlButtonClick);
     this.#filmPopupComponent.setCommentAddHandler(this.#handleCommentAddClick);
@@ -81,21 +151,21 @@ export default class FilmPresenter {
     render(this.#filmPopupComponent, pageBody);
   };
 
-  #handleCommentAddClick = (update, comment) => {
+  #handleCommentAddClick = (filmId, comment) => {
     this.#changeData(
       UserAction.ADD_COMMENT,
-      UpdateType.MINOR,
-      update,
+      UpdateType.PATCH,
+      filmId,
       comment
     );
   };
 
-  #handleCommentDeleteClick = (update, comment) => {
+  #handleCommentDeleteClick = (commentId) => {
     this.#changeData(
       UserAction.DELETE_COMMENT,
-      UpdateType.MINOR,
-      update,
-      comment
+      UpdateType.PATCH,
+      { ...this.#filmCard, comments: this.#filmCard.comments.filter((comment) => comment !== commentId)},
+      commentId
     );
   };
 
@@ -110,9 +180,5 @@ export default class FilmPresenter {
       evt.preventDefault();
       this.#removePopupFromPage();
     }
-  };
-
-  destroy = () => {
-    remove(this.#filmCardComponent);
   };
 }
