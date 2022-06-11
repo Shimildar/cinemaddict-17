@@ -74,11 +74,7 @@ export default class BoardPresenter {
     this.#renderBoard();
   };
 
-  #clearBoard = ({resetRenderedTaskCount = false, resetSortType = false, clearSort = false} = {}) => {
-    if(clearSort) {
-      remove(this.#sortComponent);
-      return;
-    }
+  #clearBoard = ({resetRenderedTaskCount = false, resetSortType = false} = {}) => {
     const taskCount = this.films.length;
 
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
@@ -104,11 +100,8 @@ export default class BoardPresenter {
     }
   };
 
-  #renderBoard = ({renderSort = false} = {}) => {
-    if (renderSort) {
-      this.#renderSort();
-      return;
-    }
+  #renderBoard = () => {
+
     render(this.#filmsContainer, this.#boardContainer);
     render(this.#filmsList, this.#filmsContainer.element);
 
@@ -177,12 +170,6 @@ export default class BoardPresenter {
         this.#filmPresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
-        if (document.querySelector('.film-details')) {
-          this.#filmPresenter.get(data.id).init(data);
-          this.#clearBoard({clearSort: true});
-          this.#renderBoard({renderSort: true});
-          return;
-        }
         this.#clearBoard();
         this.#renderBoard();
         break;
