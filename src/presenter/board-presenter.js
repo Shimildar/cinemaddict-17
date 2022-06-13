@@ -4,26 +4,28 @@ import FilmsContainerView from '../view/films-container-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import SortView from '../view/sort-view.js';
 import NoFilmMessageView from '../view/no-film-view.js';
+import UserProfileView from '../view/user-profile-view.js';
+import FooterView from '../view/footer-view.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import {ExtraContainerTitles, FilterType} from '../const.js';
 import {sortDateDown, sortRatingDown} from '../utils/sort.js';
 import {filter} from '../utils/filter.js';
-import {SortType, UserAction, UpdateType} from '../const.js';
+import {SortType, UserAction, UpdateType, UiBlockerTimeLimit, PopupMode} from '../const.js';
 import FilmPresenter from './film-presenter.js';
-import FilmView from '../view/film-view.js';
+import PopupPresenter from './popup-presenter';
+// import FilmView from '../view/film-view.js';
 import LoadingView from '../view/loading-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const PER_STEP_FILM_COUNT = 5;
-const TOP_RATED_LIST_COUNT = 2;
-const MOST_COMMENTED_LIST_COUNT = 2;
-const TimeLimit = {
-  LOWER_LIMIT: 350,
-  UPPER_LIMIT: 1000,
-};
+// const TOP_RATED_LIST_COUNT = 2;
+// const MOST_COMMENTED_LIST_COUNT = 2;
 
 export default class BoardPresenter {
+  #popupContainer = null;
+  #headerContainer = null;
   #boardContainer = null;
+  #footerContaner = null;
   #filmsModel = null;
   #commentsModel = null;
   #filterModel = null;
@@ -32,20 +34,27 @@ export default class BoardPresenter {
   #filmPresenter = new Map();
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.ALL;
+  #popupMode = PopupMode.DEFAULT;
   #isLoading = true;
-  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
+  #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
 
   #sortComponent = null;
+  #userProfileComponent = null;
   #noFilmMessageComponent = null;
+  #footerComponent = null;
   #loadingComponent = new LoadingView();
   #filmsContainer = new FilmsContainerView();
   #filmsList = new FilmsListView();
   #showMoreButton = new ShowMoreButtonView();
   #topRatedContainer = new ExtraContainerView(ExtraContainerTitles.TOP_RATED);
   #mostCommentedContainer = new ExtraContainerView(ExtraContainerTitles.MOST_COMMENTED);
+  #popupComponent = null;
 
-  constructor(boardContainer, filmsModel, commentsModel, filterModel) {
+  constructor(popupContainer, headerContainer, boardContainer, footerContaner, filmsModel, commentsModel, filterModel) {
+    this.#popupContainer = popupContainer;
+    this.#headerContainer = headerContainer;
     this.#boardContainer = boardContainer;
+    this.#footerContaner = footerContaner;
     this.#filmsModel = filmsModel;
     this.#commentsModel = commentsModel;
     this.#filterModel = filterModel;
@@ -75,15 +84,17 @@ export default class BoardPresenter {
   };
 
   #clearBoard = ({resetRenderedTaskCount = false, resetSortType = false} = {}) => {
-    const taskCount = this.films.length;
+    const filmCount = this.films.length;
 
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
     this.#filmPresenter.clear();
 
+    remove(this.#userProfileComponent);
     remove(this.#sortComponent);
     remove(this.#showMoreButton);
     remove(this.#topRatedContainer);
     remove(this.#mostCommentedContainer);
+    remove(this.#footerComponent);
 
     if (this.#noFilmMessageComponent) {
       remove(this.#noFilmMessageComponent);
@@ -92,7 +103,11 @@ export default class BoardPresenter {
     if (resetRenderedTaskCount) {
       this.#renderedFilmCount = PER_STEP_FILM_COUNT;
     } else {
-      this.#renderedFilmCount = Math.min(taskCount, this.#renderedFilmCount);
+      this.#renderedFilmCount = Math.min(filmCount, this.#renderedFilmCount);
+    }
+
+    if (filmCount === 0) {
+      this.#renderedFilmCount = PER_STEP_FILM_COUNT;
     }
 
     if (resetSortType) {
@@ -101,7 +116,6 @@ export default class BoardPresenter {
   };
 
   #renderBoard = () => {
-
     render(this.#filmsContainer, this.#boardContainer);
     render(this.#filmsList, this.#filmsContainer.element);
 
@@ -118,6 +132,7 @@ export default class BoardPresenter {
       return;
     }
 
+    this.#renderUserProfile();
     this.#renderSort();
     this.#renderFilms(films.slice(0, Math.min(filmCount, this.#renderedFilmCount)));
 
@@ -125,82 +140,18 @@ export default class BoardPresenter {
       this.#renderShowMoreButton();
     }
 
-    this.#renderTopFilmList();
-    this.#renderMostCommentedFilmList();
-  };
-
-  #handleViewAction = async (actionType, updateType, update, comment) => {
-    this.#uiBlocker.block();
-
-    switch (actionType) {
-      case UserAction.UPDATE_FILM:
-        try {
-          await this.#filmsModel.updateFilm(updateType, update);
-          if (document.querySelector('.film-details')) {
-            this.#filmPresenter.get(update.id).setPopupUpdate(actionType, update);
-          }
-        } catch(err) {
-          this.#filmPresenter.get(update.id).setControlButtonsAborting();
-        }
-        break;
-      case UserAction.ADD_COMMENT:
-        try {
-          await this.#commentsModel.addComment(updateType, update, comment);
-          this.#filmPresenter.get(update).setPopupUpdate(actionType);
-        } catch {
-          this.#filmPresenter.get(update).setSaveAborting();
-        }
-        break;
-      case UserAction.DELETE_COMMENT:
-        try {
-          await this.#commentsModel.deleteComment(updateType, update, comment);
-          this.#filmPresenter.get(update.id).setPopupUpdate(actionType);
-        } catch(err) {
-          this.#filmPresenter.get(update.id).setDeleteAborting();
-        }
-        break;
-    }
-
-    this.#uiBlocker.unblock();
-  };
-
-  #handleModelEvent = (updateType, data) => {
-    switch (updateType) {
-      case UpdateType.PATCH:
-        this.#filmPresenter.get(data.id).init(data);
-        break;
-      case UpdateType.MINOR:
-        this.#clearBoard();
-        this.#renderBoard();
-        break;
-      case UpdateType.MAJOR:
-        this.#clearBoard({resetRenderedTaskCount: true, resetSortType: true});
-        this.#renderBoard();
-        break;
-      case UpdateType.INIT:
-        this.#isLoading = false;
-        remove(this.#loadingComponent);
-        this.#renderBoard();
-        break;
-    }
+    // this.#renderTopFilmList();
+    // this.#renderMostCommentedFilmList();
+    this.#renderFooter();
   };
 
   #renderLoading = () => {
     render(this.#loadingComponent, this.#filmsList.element);
   };
 
-  #handleClearPopup = () => {
-    this.#filmPresenter.forEach((presenter) => presenter.resetView());
-  };
-
-  #handleSortTypeChange = (sortType) => {
-    if (this.#currentSortType === sortType) {
-      return;
-    }
-
-    this.#currentSortType = sortType;
-    this.#clearBoard({resetRenderedTaskCount: true});
-    this.#renderBoard();
+  #renderUserProfile = () => {
+    this.#userProfileComponent = new UserProfileView(this.#filmsModel.films);
+    render(this.#userProfileComponent, this.#headerContainer);
   };
 
   #renderSort = () => {
@@ -210,7 +161,7 @@ export default class BoardPresenter {
   };
 
   #renderFilm = (film) => {
-    const filmCardPresenter = new FilmPresenter(this.#filmsList.filmsListContainer, this.#commentsModel, this.#handleViewAction, this.#handleClearPopup);
+    const filmCardPresenter = new FilmPresenter(this.#filmsList.filmsListContainer,this.#handleControlButtonClick, this.#handleOpenPopup);
     filmCardPresenter.init(film);
     this.#filmPresenter.set(film.id, filmCardPresenter);
   };
@@ -219,20 +170,55 @@ export default class BoardPresenter {
     films.forEach((film) => this.#renderFilm(film));
   };
 
-  #renderTopFilmList = () => {
-    render(this.#topRatedContainer, this.#filmsContainer.element);
+  // #renderTopFilmList = () => {
+  //   if (this.films.length === 0) {
+  //     return;
+  //   }
 
-    for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
-      render(new FilmView(this.films[i + 6]), this.#topRatedContainer.filmsListContainer);// Временно [i + 6]
-    }
+  //   render(this.#topRatedContainer, this.#filmsContainer.element);
+
+  //   if (this.films.length < 2) {
+  //     for (const film of this.films) {
+  //       render(new FilmView(film), this.#topRatedContainer.filmsListContainer);
+  //     }
+  //   }
+
+  //   for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
+  //     render(new FilmView(this.films[i]), this.#topRatedContainer.filmsListContainer);
+  //   }
+  // };
+
+  // #renderMostCommentedFilmList = () => {
+  //   if (this.films.length === 0) {
+  //     return;
+  //   }
+
+  //   render(this.#mostCommentedContainer, this.#filmsContainer.element);
+
+  //   if (this.films.length < 2) {
+  //     for (const film of this.films) {
+  //       render(new FilmView(film), this.#topRatedContainer.filmsListContainer);
+  //     }
+  //   }
+
+  //   for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
+  //     render(new FilmView(this.films[i]), this.#mostCommentedContainer.filmsListContainer);
+  //   }
+  // };
+
+  #renderFooter = () => {
+    this.#footerComponent = new FooterView(this.#filmsModel.films.length);
+    render(this.#footerComponent, this.#footerContaner);
   };
 
-  #renderMostCommentedFilmList = () => {
-    render(this.#mostCommentedContainer, this.#filmsContainer.element);
+  #renderShowMoreButton = () => {
+    render(this.#showMoreButton, this.#filmsList.element);
+    this.#showMoreButton.setClickHandler(this.#handleShowMoreButtonClick);
+  };
 
-    for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
-      render(new FilmView(this.films[i + 3]), this.#mostCommentedContainer.filmsListContainer);// Временно [i + 3]
-    }
+  #renderNoFilmMessage = () => {
+    this.#noFilmMessageComponent = new NoFilmMessageView(this.#filterType);
+    render(this.#noFilmMessageComponent, this.#boardContainer);
   };
 
   #handleShowMoreButtonClick = () => {
@@ -248,14 +234,104 @@ export default class BoardPresenter {
     }
   };
 
-  #renderShowMoreButton = () => {
-    render(this.#showMoreButton, this.#filmsList.element);
-    this.#showMoreButton.setClickHandler(this.#handleShowMoreButtonClick);
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#currentSortType = sortType;
+    this.#clearBoard({resetRenderedTaskCount: true});
+    this.#renderBoard();
   };
 
-  #renderNoFilmMessage = () => {
-    this.#noFilmMessageComponent = new NoFilmMessageView(this.#filterType);
-    render(this.#noFilmMessageComponent, this.#boardContainer);
+  #handleViewAction = async (actionType, updateType, update, comment) => {
+    this.#uiBlocker.block();
+
+    switch (actionType) {
+      case UserAction.UPDATE_FILM:
+        try {
+          if (this.#filterType !== FilterType.ALL) {
+            updateType = UpdateType.MINOR;
+          }
+
+          await this.#filmsModel.updateFilm(updateType, update);
+          remove(this.#userProfileComponent);
+          this.#renderUserProfile();
+
+          if (this.#popupMode === PopupMode.POPUP) {
+            this.#popupComponent.setPopupUpdate(actionType, update);
+          }
+        } catch(err) {
+          if (this.#popupMode === PopupMode.POPUP) {
+            this.#popupComponent.setAborting(actionType);
+          }
+          this.#filmPresenter.get(update.id).setAborting();
+        }
+        break;
+      case UserAction.ADD_COMMENT:
+        try {
+          await this.#commentsModel.addComment(updateType, update, comment);
+          this.#popupComponent.setPopupUpdate(actionType);
+        } catch {
+          this.#popupComponent.setAborting(actionType);
+        }
+        break;
+      case UserAction.DELETE_COMMENT:
+        try {
+          await this.#commentsModel.deleteComment(updateType, update, comment);
+          this.#popupComponent.setPopupUpdate(actionType);
+        } catch(err) {
+          this.#popupComponent.setAborting(actionType);
+        }
+        break;
+    }
+
+    this.#uiBlocker.unblock();
+  };
+
+  #handleModelEvent = async (updateType, data) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        await this.#filmPresenter.get(data.id).init(data);
+        break;
+      case UpdateType.MINOR:
+        if (this.#popupMode === PopupMode.POPUP) {
+          this.#popupComponent.init(data);
+        }
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard({resetRenderedTaskCount: true, resetSortType: true});
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
+    }
+  };
+
+  #handleOpenPopup = (film) => {
+    if (this.#popupMode === PopupMode.POPUP) {
+      this.#popupComponent.resetView();
+    }
+
+    if (this.#popupMode === PopupMode.DEFAULT) {
+      this.#popupMode = PopupMode.POPUP;
+    }
+
+    this.#popupComponent = new PopupPresenter(this.#popupContainer, this.#commentsModel, this.#handleViewAction, this.#handleControlButtonClick);
+    this.#popupComponent.init(film);
+  };
+
+  #handleControlButtonClick = (update) => {
+    this.#handleViewAction(
+      UserAction.UPDATE_FILM,
+      UpdateType.PATCH,
+      update
+    );
   };
 }
 

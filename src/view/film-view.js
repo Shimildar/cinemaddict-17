@@ -86,7 +86,7 @@ export default class FilmView extends AbstractStatefulView {
 
   #clickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.click();
+    this._callback.click(FilmView.convertStateToFilm(this._state));
   };
 
   static convertFilmToState = (film) => ({...film,

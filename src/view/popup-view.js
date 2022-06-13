@@ -238,28 +238,6 @@ export default class PopupView extends AbstractStatefulView {
     }, SHAKE_ANIMATION_TIMEOUT);
   };
 
-  setShakeClassToggle = (elementType, callback) => {
-    let currentElement;
-    switch (elementType) {
-      case ShakeElementType.CONTROL_BUTTONS:
-        currentElement = this.element.querySelector('.film-details__controls');
-        break;
-      case ShakeElementType.ADD_COMMENTS_BLOCK:
-        currentElement = this.element.querySelector('.film-details__new-comment');
-        break;
-      case ShakeElementType.DELETE_COMMENTS_BLOCK:
-        currentElement = this.element.querySelector(`[data-comment-id = "${this._state.isDeleting}"]`);
-        break;
-    }
-
-    currentElement.classList.add(SHAKE_CLASS_NAME);
-
-    setTimeout(() => {
-      currentElement.classList.remove(SHAKE_CLASS_NAME);
-      callback?.();
-    }, SHAKE_ANIMATION_TIMEOUT);
-  };
-
   _restoreHandlers = () => {
     this.#setInnerHandlers();
     this.setControlButtonClickHandler(this._callback.controlButtonClick);
@@ -317,9 +295,7 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
 
     const commentId = evt.target.closest('.film-details__comment').dataset.commentId;
-    // console.log(commentId);
-    // const updatedFilm = { ...this._state, comments: this._state.comments.filter((comment) => comment !== +commentId)};
-    // console.log(updatedFilm);
+
     this.updateElement({
       isDeleting: commentId
     });
