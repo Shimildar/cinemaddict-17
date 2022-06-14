@@ -1,5 +1,3 @@
-const pageBody = document.querySelector('body');
-
 const ExtraContainerTitles = {
   TOP_RATED: 'Top rated',
   MOST_COMMENTED: 'Most commented'
@@ -43,4 +41,20 @@ const UserStatus = {
   MOVIE_BUFF: 'Movie Buff'
 };
 
-export {ExtraContainerTitles, pageBody, SortType, FilterType, PopupDateFormat, UserAction, UpdateType, UserStatus};
+const ShakeElementType = {
+  CONTROL_BUTTONS: 'CONTROL_BUTTONS',
+  ADD_COMMENTS_BLOCK: 'ADD_COMMENTS_BLOCK',
+  DELETE_COMMENTS_BLOCK: 'DELETE_COMMENTS_BLOCK'
+};
+
+const UiBlockerTimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
+const PopupMode = {
+  DEFAULT: 'DEFAULT',
+  POPUP: 'POPUP',
+};
+
+export {ExtraContainerTitles, SortType, FilterType, PopupDateFormat, UserAction, UpdateType, UserStatus, ShakeElementType, UiBlockerTimeLimit, PopupMode};
