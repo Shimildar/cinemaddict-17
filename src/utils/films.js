@@ -1,17 +1,17 @@
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+import duration from 'dayjs/plugin/duration';
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
 
-// Приводит в нужный формат дату и время
 const humanizeDate = (date, format) => dayjs(date).format(format);
 
-// Приводит в нужный формат длительность фильма из минут в часы и минуты
-const humanizeFilmRuntime = (item) => {
-  const hours = Math.floor(item / 60);
-  const minutes = item - (60 * hours);
+const humanizeCommentDate = (date) => dayjs(date).fromNow();
 
-  return `${hours}h ${minutes}m`;
-};
+const humanizeFilmRuntime = (runTime, format) => dayjs.duration(runTime, 'minutes').format(format);
 
 const isCtrlEnterPressed = (evt) => (evt.keyCode === 10 || evt.keyCode === 13) && (evt.ctrlKey || evt.metaKey);
+
 const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
-export {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed, isEscPressed};
+export {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed, isEscPressed, humanizeCommentDate};

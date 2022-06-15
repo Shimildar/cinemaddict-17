@@ -4,7 +4,6 @@ import FilmsModel from './model/films-model.js';
 import CommentsModel from './model/comments-model.js';
 import FilterModel from './model/filter-model.js';
 import FilmsApiService from './api-services/films-api-service.js';
-import CommentsApiService from './api-services/comments-api-service.js';
 
 const AUTHORIZATION = 'Basic sjkdbfjsdbH6@LKLj0';
 const END_POINT = 'https://17.ecmascript.pages.academy/cinemaddict/';
@@ -15,7 +14,7 @@ const siteMainElement = pageBody.querySelector('.main');
 const siteFooterElement = pageBody.querySelector('.footer');
 
 const filmsModel = new FilmsModel(new FilmsApiService(END_POINT, AUTHORIZATION));
-const commentsModel = new CommentsModel(new CommentsApiService(END_POINT, AUTHORIZATION));
+const commentsModel = new CommentsModel(new FilmsApiService(END_POINT, AUTHORIZATION));
 const filterModel = new FilterModel();
 
 const filterPresenter = new FilterPresenter(siteMainElement, filmsModel, filterModel);

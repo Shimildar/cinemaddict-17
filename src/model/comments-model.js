@@ -2,12 +2,12 @@ import ObservableModel from '../framework/observeble-model.js';
 
 
 export default class CommentsModel extends ObservableModel {
-  #commentsApiService = null;
+  #filmsApiService = null;
   #comments = [];
 
-  constructor(commentsApiService) {
+  constructor(filmsApiService) {
     super();
-    this.#commentsApiService = commentsApiService;
+    this.#filmsApiService = filmsApiService;
   }
 
   get comments() {
@@ -16,7 +16,7 @@ export default class CommentsModel extends ObservableModel {
 
   init = async (film) => {
     try {
-      const comments = await this.#commentsApiService.getComments(film);
+      const comments = await this.#filmsApiService.getComments(film);
       this.#comments = comments.map(this.#adaptCommentToClient);
     } catch(err) {
       this.#comments = [];
@@ -26,7 +26,7 @@ export default class CommentsModel extends ObservableModel {
   addComment = async (updateType, filmId, comment) => {
 
     try {
-      const response = await this.#commentsApiService.addComment(filmId, comment);
+      const response = await this.#filmsApiService.addComment(filmId, comment);
       const updatedFilm = this._adaptFilmToClient(response.movie);
       this.#comments = response.comments.map((item) => this.#adaptCommentToClient(item));
 
@@ -44,7 +44,7 @@ export default class CommentsModel extends ObservableModel {
     }
 
     try {
-      await this.#commentsApiService.deleteComment(commentId);
+      await this.#filmsApiService.deleteComment(commentId);
 
       this.#comments = [
         ...this.#comments.slice(0, index),
