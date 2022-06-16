@@ -17,7 +17,7 @@ const createFilmCard = (film) => {
           <p class="film-card__rating">${filmInfo.totalRating}</p>
           <p class="film-card__info">
               <span class="film-card__year">${humanizeDate(filmInfo.release.date, filmReleaseDateFormat)}</span>
-              <span class="film-card__duration">${humanizeFilmRuntime(filmInfo.runtime)}</span>
+              <span class="film-card__duration">${humanizeFilmRuntime(filmInfo.runtime, filmInfo.runtime > 60 ? 'H[h] m[m]' : 'm[m]')}</span>
               <span class="film-card__genre">${filmInfo.genre[0]}</span>
           </p>
           <img src="${filmInfo.poster}" alt="" class="film-card__poster">
