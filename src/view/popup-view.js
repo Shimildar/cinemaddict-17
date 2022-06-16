@@ -1,6 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed} from '../utils/films.js';
-import {PopupDateFormat, ShakeElementType} from '../const.js';
+import {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed, humanizeCommentDate} from '../utils/films.js';
+import {PopupDateFormat} from '../const.js';
 import he from 'he';
 
 const CONTROL_BUTTON_ACTIVE_CLASS = 'film-details__control-button--active';
@@ -23,7 +23,7 @@ const createCommentsList = (comments, isDeleting) =>
         <p class="film-details__comment-text">${he.encode(comment)}</p>
         <p class="film-details__comment-info">
           <span class="film-details__comment-author">${author}</span>
-          <span class="film-details__comment-day">${humanizeDate(date, PopupDateFormat.COMMENT)}</span>
+          <span class="film-details__comment-day">${humanizeCommentDate(date)}</span>
           <button class="film-details__comment-delete" ${isDeleting === id ? 'disabled' : ''}>${isDeleting === id ? 'Deleting...' : 'Delete'}</button>
         </p>
       </div>
@@ -81,7 +81,7 @@ const createPopup = (film) => {
               </tr>
               <tr class="film-details__row">
                 <td class="film-details__term">Runtime</td>
-                <td class="film-details__cell">${humanizeFilmRuntime(filmInfo.runtime)}</td>
+                <td class="film-details__cell">${humanizeFilmRuntime(filmInfo.runtime, filmInfo.runtime > 60 ? 'H[h] m[m]' : 'm[m]')}</td>
               </tr>
               <tr class="film-details__row">
                 <td class="film-details__term">Country</td>
@@ -193,6 +193,7 @@ export default class PopupView extends AbstractStatefulView {
       });
 
       this._callback.controlButtonClick({...PopupView.convertStateToFilm(update)});
+
     });
   };
 

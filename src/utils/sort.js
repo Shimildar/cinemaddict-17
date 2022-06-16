@@ -28,4 +28,10 @@ const sortRatingDown = (filmA, filmB) => {
   return weight ?? dayjs(filmB.filmInfo.totalRating).diff(dayjs(filmA.filmInfo.totalRating));
 };
 
-export {sortDateDown, sortRatingDown};
+const sortCommentCountDown = (filmA, filmB) => {
+  const weight = getWeightForNullDate(filmA.comments.length, filmB.comments.length);
+
+  return weight ?? dayjs(filmB.comments.length).diff(dayjs(filmA.comments.length));
+};
+
+export {sortDateDown, sortRatingDown, sortCommentCountDown};

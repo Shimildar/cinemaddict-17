@@ -8,18 +8,15 @@ import UserProfileView from '../view/user-profile-view.js';
 import FooterView from '../view/footer-view.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import {ExtraContainerTitles, FilterType} from '../const.js';
-import {sortDateDown, sortRatingDown} from '../utils/sort.js';
+import {sortDateDown, sortRatingDown, sortCommentCountDown} from '../utils/sort.js';
 import {filter} from '../utils/filter.js';
 import {SortType, UserAction, UpdateType, UiBlockerTimeLimit, PopupMode} from '../const.js';
 import FilmPresenter from './film-presenter.js';
 import PopupPresenter from './popup-presenter';
-// import FilmView from '../view/film-view.js';
 import LoadingView from '../view/loading-view.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const PER_STEP_FILM_COUNT = 5;
-// const TOP_RATED_LIST_COUNT = 2;
-// const MOST_COMMENTED_LIST_COUNT = 2;
 
 export default class BoardPresenter {
   #popupContainer = null;
@@ -32,6 +29,8 @@ export default class BoardPresenter {
 
   #renderedFilmCount = PER_STEP_FILM_COUNT;
   #filmPresenter = new Map();
+  #topRatedPresenter = new Map();
+  #mostCommentedPresenter = new Map();
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.ALL;
   #popupMode = PopupMode.DEFAULT;
@@ -88,6 +87,10 @@ export default class BoardPresenter {
 
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
     this.#filmPresenter.clear();
+    this.#topRatedPresenter.forEach((presenter) => presenter.destroy());
+    this.#topRatedPresenter.clear();
+    this.#mostCommentedPresenter.forEach((presenter) => presenter.destroy());
+    this.#mostCommentedPresenter.clear();
 
     remove(this.#userProfileComponent);
     remove(this.#sortComponent);
@@ -140,8 +143,8 @@ export default class BoardPresenter {
       this.#renderShowMoreButton();
     }
 
-    // this.#renderTopFilmList();
-    // this.#renderMostCommentedFilmList();
+    this.#renderTopFilmList();
+    this.#renderMostCommentedFilmList();
     this.#renderFooter();
   };
 
@@ -170,41 +173,47 @@ export default class BoardPresenter {
     films.forEach((film) => this.#renderFilm(film));
   };
 
-  // #renderTopFilmList = () => {
-  //   if (this.films.length === 0) {
-  //     return;
-  //   }
+  #renderTopFilmList = () => {
+    const sortedFilms = this.#filmsModel.films.sort(sortRatingDown).slice(0, 2).filter((item) => item.filmInfo.totalRating > 1);
 
-  //   render(this.#topRatedContainer, this.#filmsContainer.element);
+    if (sortedFilms.length === 0) {
+      return;
+    }
 
-  //   if (this.films.length < 2) {
-  //     for (const film of this.films) {
-  //       render(new FilmView(film), this.#topRatedContainer.filmsListContainer);
-  //     }
-  //   }
+    if (this.#topRatedPresenter.length > 0) {
+      this.#topRatedPresenter.forEach((presenter) => presenter.destroy());
+      this.#topRatedPresenter.clear();
+    }
 
-  //   for (let i = 0; i < TOP_RATED_LIST_COUNT; i++) {
-  //     render(new FilmView(this.films[i]), this.#topRatedContainer.filmsListContainer);
-  //   }
-  // };
+    render(this.#topRatedContainer, this.#filmsContainer.element);
 
-  // #renderMostCommentedFilmList = () => {
-  //   if (this.films.length === 0) {
-  //     return;
-  //   }
+    for (const film of sortedFilms) {
+      const filmCardPresenter = new FilmPresenter(this.#topRatedContainer.filmsListContainer,this.#handleControlButtonClick, this.#handleOpenPopup);
+      filmCardPresenter.init(film);
+      this.#topRatedPresenter.set(film.id, filmCardPresenter);
+    }
+  };
 
-  //   render(this.#mostCommentedContainer, this.#filmsContainer.element);
+  #renderMostCommentedFilmList = () => {
+    const sortedFilms = this.#filmsModel.films.sort(sortCommentCountDown).slice(0, 2).filter((item) => item.comments.length > 0);
 
-  //   if (this.films.length < 2) {
-  //     for (const film of this.films) {
-  //       render(new FilmView(film), this.#topRatedContainer.filmsListContainer);
-  //     }
-  //   }
+    if (sortedFilms.length === 0) {
+      return;
+    }
 
-  //   for (let i = 0; i < MOST_COMMENTED_LIST_COUNT; i++) {
-  //     render(new FilmView(this.films[i]), this.#mostCommentedContainer.filmsListContainer);
-  //   }
-  // };
+    render(this.#mostCommentedContainer, this.#filmsContainer.element);
+
+    if (this.#mostCommentedPresenter > 0) {
+      this.#mostCommentedPresenter.forEach((presenter) => presenter.destroy());
+      this.#mostCommentedPresenter.clear();
+    }
+
+    for (const film of sortedFilms) {
+      const filmCardPresenter = new FilmPresenter(this.#mostCommentedContainer.filmsListContainer,this.#handleControlButtonClick, this.#handleOpenPopup);
+      filmCardPresenter.init(film);
+      this.#mostCommentedPresenter.set(film.id, filmCardPresenter);
+    }
+  };
 
   #renderFooter = () => {
     this.#footerComponent = new FooterView(this.#filmsModel.films.length);

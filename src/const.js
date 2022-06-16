@@ -41,12 +41,6 @@ const UserStatus = {
   MOVIE_BUFF: 'Movie Buff'
 };
 
-const ShakeElementType = {
-  CONTROL_BUTTONS: 'CONTROL_BUTTONS',
-  ADD_COMMENTS_BLOCK: 'ADD_COMMENTS_BLOCK',
-  DELETE_COMMENTS_BLOCK: 'DELETE_COMMENTS_BLOCK'
-};
-
 const UiBlockerTimeLimit = {
   LOWER_LIMIT: 350,
   UPPER_LIMIT: 1000,
@@ -57,4 +51,4 @@ const PopupMode = {
   POPUP: 'POPUP',
 };
 
-export {ExtraContainerTitles, SortType, FilterType, PopupDateFormat, UserAction, UpdateType, UserStatus, ShakeElementType, UiBlockerTimeLimit, PopupMode};
+export {ExtraContainerTitles, SortType, FilterType, PopupDateFormat, UserAction, UpdateType, UserStatus, UiBlockerTimeLimit, PopupMode};
