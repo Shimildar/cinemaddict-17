@@ -3,7 +3,7 @@ import ExtraContainerView from '../view/extra-container-view.js';
 import FilmsContainerView from '../view/films-container-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import SortView from '../view/sort-view.js';
-import NoFilmMessageView from '../view/no-film-view.js';
+import NoFilmMessageView from '../view/no-film-message-view.js';
 import UserProfileView from '../view/user-profile-view.js';
 import FooterView from '../view/footer-view.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
@@ -144,7 +144,7 @@ export default class BoardPresenter {
     }
 
     this.#renderTopFilmList();
-    this.#renderMostCommentedFilmList();
+    this.#renderMostCommentedFilms();
     this.#renderFooter();
   };
 
@@ -173,8 +173,12 @@ export default class BoardPresenter {
     films.forEach((film) => this.#renderFilm(film));
   };
 
-  #renderTopFilmList = () => {
+  #renderTopFilmList = ({removeContainer = false} = {}) => {
     const sortedFilms = this.#filmsModel.films.sort(sortRatingDown).slice(0, 2).filter((item) => item.filmInfo.totalRating > 1);
+
+    if (removeContainer) {
+      remove(this.#topRatedContainer);
+    }
 
     if (sortedFilms.length === 0) {
       return;
@@ -194,8 +198,12 @@ export default class BoardPresenter {
     }
   };
 
-  #renderMostCommentedFilmList = () => {
+  #renderMostCommentedFilms = ({removeContainer = false} = {}) => {
     const sortedFilms = this.#filmsModel.films.sort(sortCommentCountDown).slice(0, 2).filter((item) => item.comments.length > 0);
+
+    if (removeContainer) {
+      remove(this.#mostCommentedContainer);
+    }
 
     if (sortedFilms.length === 0) {
       return;
@@ -280,6 +288,7 @@ export default class BoardPresenter {
       case UserAction.ADD_COMMENT:
         try {
           await this.#commentsModel.addComment(updateType, update, comment);
+          await this.#filmsModel.updateFilm(updateType, update);
           this.#popupComponent.setPopupUpdate(actionType);
         } catch {
           this.#popupComponent.setAborting(actionType);
@@ -288,6 +297,7 @@ export default class BoardPresenter {
       case UserAction.DELETE_COMMENT:
         try {
           await this.#commentsModel.deleteComment(updateType, update, comment);
+          await this.#filmsModel.updateFilm(updateType, update);
           this.#popupComponent.setPopupUpdate(actionType);
         } catch(err) {
           this.#popupComponent.setAborting(actionType);
@@ -301,7 +311,11 @@ export default class BoardPresenter {
   #handleModelEvent = async (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        await this.#filmPresenter.get(data.id).init(data);
+        if (this.#filmPresenter.has(data.id)) {
+          await this.#filmPresenter.get(data.id).init(data);
+        }
+        this.#renderTopFilmList({removeContainer: true});
+        this.#renderMostCommentedFilms({removeContainer: true});
         break;
       case UpdateType.MINOR:
         if (this.#popupMode === PopupMode.POPUP) {

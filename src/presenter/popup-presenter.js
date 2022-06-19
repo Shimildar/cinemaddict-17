@@ -115,11 +115,11 @@ export default class PopupPresenter {
     this.#removePopupFromPage();
   };
 
-  #handleCommentAddClick = (filmId, comment) => {
+  #handleCommentAddClick = (update, comment) => {
     this.#changeData(
       UserAction.ADD_COMMENT,
       UpdateType.PATCH,
-      filmId,
+      update,
       comment
     );
   };

@@ -288,7 +288,7 @@ export default class PopupView extends AbstractStatefulView {
         isSaving: true
       });
 
-      this._callback.commentFormSubmit(this._state.id, newCommentComponent);
+      this._callback.commentFormSubmit({...PopupView.convertStateToFilm(this._state)}, newCommentComponent);
     }
   };
 

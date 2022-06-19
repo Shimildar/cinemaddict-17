@@ -10,7 +10,8 @@ const humanizeCommentDate = (date) => dayjs(date).fromNow();
 
 const humanizeFilmRuntime = (runTime, format) => dayjs.duration(runTime, 'minutes').format(format);
 
-const isCtrlEnterPressed = (evt) => (evt.keyCode === 10 || evt.keyCode === 13) && (evt.ctrlKey || evt.metaKey);
+const isCtrlEnterPressed = (evt) => evt.key === 'Enter' && (evt.ctrlKey || evt.metaKey);
+
 const isEscPressed = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
 
 export {humanizeDate, humanizeFilmRuntime, isCtrlEnterPressed, isEscPressed, humanizeCommentDate};
