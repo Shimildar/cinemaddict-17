@@ -25,7 +25,7 @@ const sortDateDown = (filmA, filmB) => {
 const sortRatingDown = (filmA, filmB) => {
   const weight = getWeightForNullDate(filmA.filmInfo.totalRating, filmB.filmInfo.totalRating);
 
-  return weight ?? dayjs(filmB.filmInfo.totalRating).diff(dayjs(filmA.filmInfo.totalRating));
+  return weight ?? filmB.filmInfo.totalRating - filmA.filmInfo.totalRating;
 };
 
 const sortCommentCountDown = (filmA, filmB) => {
